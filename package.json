@@ -1,0 +1,71 @@
+{
+  "name": "personal-cv",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "dev": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "react-icons": "^4.12.0",
+    "react-scripts": "^5.0.1",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "prettier": "^3.3.3"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "react/jsx-key": "error",
+      "react/jsx-no-useless-fragment": "warn",
+      "react/no-array-index-key": "warn",
+      "react/prop-types": "off",
+      "react/self-closing-comp": "warn",
+      "import/order": ["warn", {"groups": [["builtin", "external"], ["internal"], ["parent", "sibling", "index"]], "newlines-between": "always", "alphabetize": {"order": "asc", "caseInsensitive": true}}],
+      "no-console": ["warn", {"allow": ["warn", "error"]}],
+      "max-lines-per-function": ["warn", {"max": 80, "skipBlankLines": true, "skipComments": true}],
+      "complexity": ["warn", 10],
+      "react/forbid-dom-props": ["warn", {"forbid": ["style"]}],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/consistent-type-imports": ["warn", {"prefer": "type-imports"}]
+    }
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "semi": true,
+    "arrowParens": "always"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

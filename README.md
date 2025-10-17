@@ -1,0 +1,97 @@
+# Personal CV Web Page
+
+This project is a personal CV web page built with React and TypeScript. It showcases various projects, provides detailed project pages, and includes a responsive design for mobile compatibility.
+
+## Project Structure
+
+The project is organized as follows:
+
+```
+personal-cv
+├── public
+│   └── index.html          # Main HTML file
+├── src
+│   ├── index.tsx          # Entry point of the React application
+│   ├── App.tsx            # Main App component with routing
+│   ├── routes.tsx         # Defines application routes
+│   ├── pages               # Contains page components
+│   │   ├── Home.tsx       # Home page component
+│   │   ├── Projects.tsx    # Projects overview page
+│   │   └── ProjectDetail.tsx # Detailed project page
+│   ├── components          # Reusable components
+│   │   ├── Header.tsx      # Header component
+│   │   ├── Sidebar.tsx     # Sidebar navigation component
+│   │   ├── Footer.tsx      # Footer component
+│   │   ├── ProjectList.tsx  # List of projects
+│   │   ├── ProjectCard.tsx  # Individual project card
+│   │   └── MobileNav.tsx    # Mobile navigation menu
+│   ├── hooks               # Custom hooks
+│   │   └── useWindowSize.ts # Hook for window size
+│   ├── data                # Data files
+│   │   └── projects.ts      # Project data
+│   ├── styles              # CSS styles
+│   │   ├── globals.css      # Global styles
+│   │   └── components.css    # Component-specific styles
+│   ├── utils               # Utility functions
+│   │   └── helpers.ts       # Helper functions
+│   └── types               # TypeScript types
+│       └── index.ts         # Type definitions
+├── package.json            # NPM configuration
+├── tsconfig.json           # TypeScript configuration
+├── .gitignore              # Git ignore file
+└── README.md               # Project documentation
+```
+
+## Getting Started
+
+To get started with this project, follow these steps:
+
+1. **Clone the repository:**
+   ```
+   git clone <repository-url>
+   ```
+
+2. **Navigate to the project directory:**
+   ```
+   cd personal-cv
+   ```
+
+3. **Install dependencies:**
+   ```
+   npm install
+   ```
+
+4. **Run the application:**
+   ```
+   npm start
+   ```
+
+The application will be available at `http://localhost:3000`.
+
+## Features
+
+- Overview of various projects with clickable links leading to detailed pages.
+- Responsive design for mobile compatibility.
+- Sidebar navigation for easy access to different sections of the CV.
+
+## ToDo
+
+- add project component
+   - pictures
+   - used programming languages
+   - duration, when was it worked on?
+   - status (under development / completed)
+- allow to add more details to each job / education
+  - maybe a good idea to make this expandable
+  - add a separate component for this
+- download CV button
+- add "About me" section
+- color code programming languages (reference skill <-> project, work experience)
+
+- allow to add any kind of description / page with markdown
+  -> very efficient and powerful way of adding custom content
+  -> can just add the markdown from github?
+
+## License
+
+This project is licensed under the MIT License.
