@@ -1,16 +1,16 @@
 import React from 'react';
 import ProjectCard from './ProjectCard';
-import defaultProjects from '../data/projects.json';
+import projectsData from '../data/projects.json';
 import type { Project } from '../types';
 
 interface Props {
     projects?: Project[];
 }
 
-const ProjectList: React.FC<Props> = ({ projects = defaultProjects }) => {
+const ProjectList: React.FC<Props> = ({ projects = (projectsData as any).projects }) => {
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
+            {projects.map((project: Project) => (
                 <ProjectCard key={project.id} project={project} />
             ))}
         </div>

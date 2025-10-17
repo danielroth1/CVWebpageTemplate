@@ -92,6 +92,13 @@ The application will be available at `http://localhost:3000`.
   -> very efficient and powerful way of adding custom content
   -> can just add the markdown from github?
 
+- simplify README.md for emplyers (not developer)
+  - if possible add download buttons for release version
+  - if possible add link to web page
+  - every project should have a very short description
+  - missing projects:
+    - 
+
 ## License
 
 This project is licensed under the MIT License.

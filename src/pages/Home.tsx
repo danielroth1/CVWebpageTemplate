@@ -1,17 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
-import cv from '../data/cv.json';
+import resume from '../data/RESUME.json';
 import personal_photo from '../data/personal_photo.jpg';
 
 const Home: React.FC = () => {
+    // Profile information now lives in RESUME.json
+    const profile = (resume as any).profile as { name: string; title: string; skills: string[] } | undefined;
+    const work = (resume as any).work as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
+    const education = (resume as any).education as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
     return (
         <div className="max-w-6xl mx-auto">
             <header className="px-4 py-8 flex items-center gap-6">
-                <img src={personal_photo} alt={`${cv.name} photo`} className="w-24 h-24 rounded-full object-cover shadow-sm" />
+                <img src={personal_photo} alt={`${profile?.name ?? 'Profile'} photo`} className="w-24 h-24 rounded-full object-cover shadow-sm" />
                 <div>
-                    <h1 className="text-3xl font-bold">{cv.name}</h1>
-                    <p className="text-gray-600">{cv.title}</p>
+                    <h1 className="text-3xl font-bold">{profile?.name}</h1>
+                    <p className="text-gray-600">{profile?.title}</p>
                 </div>
             </header>
 
@@ -21,22 +25,26 @@ const Home: React.FC = () => {
                     <div>
                         <h3 className="font-medium">Education</h3>
                         <ul className="list-disc list-inside text-gray-700">
-                            {cv.education.map((e, i) => (
-                                <li key={i}>{e.degree} — {e.school} ({e.period})</li>
-                            ))}
+                            {education?.length ? education.map((e, i) => (
+                                <li key={i}>{e.position} — {e.company} ({e.startYear} – {e.endYear})</li>
+                            )) : (
+                                <li className="text-gray-500">Add your education in src/data/RESUME.json</li>
+                            )}
                         </ul>
                     </div>
                     <div>
                         <h3 className="font-medium">Work</h3>
                         <ul className="list-disc list-inside text-gray-700">
-                            {cv.workHistory.map((w, i) => (
-                                <li key={i}>{w.role} — {w.company} ({w.period})</li>
-                            ))}
+                            {work?.length ? work.map((w, i) => (
+                                <li key={i}>{w.position} — {w.company} ({w.startYear} – {w.endYear})</li>
+                            )) : (
+                                <li className="text-gray-500">Add your work history in src/data/RESUME.json</li>
+                            )}
                         </ul>
                     </div>
                     <div>
                         <h3 className="font-medium">Skills</h3>
-                        <p className="text-gray-700">{cv.skills.join(', ')}</p>
+                        <p className="text-gray-700">{profile?.skills?.join(', ')}</p>
                     </div>
                 </div>
             </section>

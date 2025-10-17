@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaProjectDiagram, FaUser, FaFileAlt } from 'react-icons/fa';
-import projects from '../data/projects.json';
+import projectsData from '../data/projects.json';
+import type { Project } from '../types';
 
 const Sidebar: React.FC = () => {
     return (
@@ -31,7 +32,7 @@ const Sidebar: React.FC = () => {
             </ul>
             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Projects</h3>
             <ul className="space-y-1">
-                {projects.map(p => (
+                {(projectsData as any).projects.map((p: Project) => (
                     <li key={p.id}>
                         <Link className="block px-3 py-1.5 rounded text-sm text-gray-700 hover:bg-gray-200" to={p.link}>{p.title}</Link>
                     </li>

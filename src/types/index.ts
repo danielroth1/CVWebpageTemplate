@@ -13,12 +13,14 @@ export interface Project {
     markdownUrl?: string;
 }
 
-export interface CVData {
+export interface Profile {
     name: string;
     title: string;
     email: string;
     phone: string;
-    education: Array<{ school: string; degree: string; period: string; details?: string[] }>;
-    workHistory: Array<{ company: string; role: string; period: string; details?: string[] }>;
     skills: string[];
+}
+
+export interface ProjectsData {
+    projects: Project[];
 }

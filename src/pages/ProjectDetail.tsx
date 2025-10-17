@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import projects from '../data/projects.json';
+import projectsData from '../data/projects.json';
 import loadMarkdown, { getMarkdownAssetUrl } from '../utils/markdownLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,7 +8,7 @@ import rehypeRaw from 'rehype-raw';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const project = projects.find((p) => p.id === id);
+    const project = projectsData.projects.find((p) => p.id === id);
 
     const [md, setMd] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
