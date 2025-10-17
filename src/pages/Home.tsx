@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
 import cv from '../data/cv.json';
-import personal_photo from '../assets/personal_photo.jpg';
+import personal_photo from '../data/personal_photo.jpg';
 
 const Home: React.FC = () => {
     return (
