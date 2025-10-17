@@ -1,5 +1,5 @@
 // Lightweight loader that supports loading markdown either from:
-// - a local path within src/data/projects (bundled as an asset)
+// - a local path within src/data or src/data/projects (bundled as an asset)
 // - an external http(s) URL
 // Returns the markdown text or an empty string on failure.
 
@@ -23,7 +23,8 @@ try {
   // In Vite, this will be statically analyzed and replaced.
   // Note: two globs - one for raw content, one for asset URLs (if needed later)
   // @ts-ignore
-  const raw = import.meta.glob('../data/projects/**/*.md', { as: 'raw', eager: true });
+  // Load ALL markdown files under src/data (including projects subfolders)
+  const raw = import.meta.glob('../data/**/*.md', { as: 'raw', eager: true });
   viteMdModules = raw as Record<string, string>;
 } catch {
   viteMdModules = null;
@@ -36,7 +37,8 @@ declare const require: any;
 let reqCtx: any = null;
 try {
   if (!viteMdModules && typeof require !== 'undefined' && require.context) {
-    reqCtx = require.context('../data/projects', true, /\.md$/);
+    // Fallback for Webpack/CRA: search under data and its subfolders
+    reqCtx = require.context('../data', true, /\.md$/);
   }
 } catch {
   reqCtx = null;
@@ -45,53 +47,43 @@ try {
 function resolveLocalKey(markdownUrl: string): string | null {
   // If neither Vite nor Webpack contexts available, we can't resolve a bundled asset
   if (!viteMdModules && !reqCtx) return null;
-  // Normalize to the path relative to src/data/projects
+  // Normalize to a suffix path under data/**
   // Accept inputs like:
   // - "/src/data/projects/CAE/README.md"
   // - "src/data/projects/CAE/README.md"
-  // - "./src/data/projects/CAE/README.md"
-  // - "./data/projects/CAE/README.md"
-  // - "data/projects/CAE/README.md"
-  // - "projects/CAE/README.md"
-  // - "CAE/README.md"
-  let key = markdownUrl
-    .replace(/^\.\//, '')
-    .replace(/^\//, '')
-    .replace(/^src\//, '')
-    .replace(/^\.\/src\//, '')
-    .replace(/^data\//, 'data/')
-    .replace(/^projects\//, 'projects/');
-
-  // Strip leading "data/projects/" if present to get path relative to that folder
-  const idx = key.indexOf('data/projects/');
-  if (idx >= 0) {
-    key = key.substring(idx + 'data/projects/'.length);
+  // - "./src/data/ABOUT_ME.md"
+  // - "data/RESUME.md"
+  // - "ABOUT_ME.md" (will be interpreted as data/ABOUT_ME.md)
+  let key = markdownUrl.replace(/^\.\//, '').replace(/^\//, '');
+  key = key.replace(/^src\//i, '').replace(/^\.\/src\//i, '');
+  if (!/^(data)\//i.test(key)) {
+    // If path doesn't start with data/, assume it refers to a file in data/
+    key = `data/${key}`;
   }
-
-  // If still contains any leading segments before actual project folder, attempt to trim
-  // Ensure it starts with './'
-  if (!key.startsWith('./')) key = `./${key}`;
-
-  // Ensure it points to a .md under the context
-  if (!key.endsWith('.md')) return null;
+  if (!key.toLowerCase().endsWith('.md')) return null;
 
   if (viteMdModules) {
-    // Vite keys are like '/src/data/projects/CAE/README.md' relative to project root when using this glob.
     const keys = Object.keys(viteMdModules);
-    let candidates = [key, key.replace(/^\.\//, '/src/data/projects/')];
-    for (const k of candidates) {
-      const exact = keys.find((x) => x.toLowerCase() === k.toLowerCase());
+    // Attempt exact matches against several common prefixes
+    const candidates = [
+      key,
+      `./${key}`,
+      `/src/${key}`,
+      `/src/${key}`.replace(/\\/g, '/'),
+    ];
+    for (const cand of candidates) {
+      const exact = keys.find((x) => x.toLowerCase() === cand.toLowerCase());
       if (exact) return exact;
     }
-    const found = keys.find((k) => k.toLowerCase().endsWith(key.replace(/^\.\//, '').toLowerCase()));
+    // Fallback: suffix search
+    const found = keys.find((k) => k.toLowerCase().endsWith(key.toLowerCase()));
     return found ?? null;
   }
 
   if (reqCtx) {
     const available = reqCtx.keys();
-    // Direct match
-    if (available.includes(key)) return key;
-    // Try to find by suffix match (in case of slight path differences)
+    const direct = available.find((k: string) => k.toLowerCase() === `./${key}`.toLowerCase());
+    if (direct) return direct;
     const found = available.find((k: string) => k.toLowerCase().endsWith(key.toLowerCase()));
     return found ?? null;
   }

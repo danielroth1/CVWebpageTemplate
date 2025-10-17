@@ -9,6 +9,8 @@ const MobileNav: React.FC<{ isOpen: boolean; toggleNav: () => void }> = ({ isOpe
                 <nav className="p-4 mt-8 space-y-2">
                     <Link to="/" onClick={toggleNav} className="block px-3 py-2 rounded hover:bg-gray-100">Home</Link>
                     <Link to="/projects" onClick={toggleNav} className="block px-3 py-2 rounded hover:bg-gray-100">Projects</Link>
+                    <Link to="/about" onClick={toggleNav} className="block px-3 py-2 rounded hover:bg-gray-100">About</Link>
+                    <Link to="/resume" onClick={toggleNav} className="block px-3 py-2 rounded hover:bg-gray-100">Resume</Link>
                 </nav>
             </div>
         </div>

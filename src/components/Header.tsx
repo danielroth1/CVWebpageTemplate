@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { FaHome, FaProjectDiagram, FaUser, FaFileAlt } from 'react-icons/fa';
 
 const Header: React.FC = () => {
     return (
@@ -8,8 +9,26 @@ const Header: React.FC = () => {
                 <Link to="/" className="text-lg font-semibold">My Personal CV</Link>
                 <nav className="hidden md:block">
                     <ul className="flex items-center gap-4 text-sm">
-                        <li><Link className="hover:underline" to="/">Home</Link></li>
-                        <li><Link className="hover:underline" to="/projects">Projects</Link></li>
+                        <li>
+                            <NavLink className={({isActive}) => `hover:underline inline-flex items-center gap-2 ${isActive ? 'font-semibold' : ''}`} to="/">
+                                <FaHome /> <span>Home</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink className={({isActive}) => `hover:underline inline-flex items-center gap-2 ${isActive ? 'font-semibold' : ''}`} to="/projects">
+                                <FaProjectDiagram /> <span>Projects</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink className={({isActive}) => `hover:underline inline-flex items-center gap-2 ${isActive ? 'font-semibold' : ''}`} to="/about">
+                                <FaUser /> <span>About</span>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink className={({isActive}) => `hover:underline inline-flex items-center gap-2 ${isActive ? 'font-semibold' : ''}`} to="/resume">
+                                <FaFileAlt /> <span>Resume</span>
+                            </NavLink>
+                        </li>
                     </ul>
                 </nav>
             </div>

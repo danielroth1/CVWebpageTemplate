@@ -95,3 +95,27 @@ The application will be available at `http://localhost:3000`.
 ## License
 
 This project is licensed under the MIT License.
+
+## Additional Pages
+
+### About page
+
+- Create or edit `src/data/ABOUT_ME.md` to populate the About page at `/about`.
+
+### Resume page
+
+- The Resume page at `/resume` will prefer `src/data/RESUME.md` if present.
+- If `RESUME.md` is not present, it will look for `src/data/RESUME.json` with the shape:
+
+```
+{
+   "work": [ { "startYear": "2022", "endYear": "2025", "position": "Senior Dev", "company": "Acme", "bullets": ["..."] } ],
+   "education": [ { "startYear": "2016", "endYear": "2020", "position": "B.Sc.", "company": "State University", "bullets": ["..."] } ]
+}
+```
+
+- Place a `resume.pdf` in the `public/` folder to enable the Download Resume button and inline PDF preview.
+
+### Icons
+
+- The navigation includes icons via `react-icons` (Home, Projects, About, Resume).

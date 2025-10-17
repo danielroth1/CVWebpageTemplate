@@ -1,0 +1,170 @@
+import React from 'react';
+import { FaFilePdf } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import loadMarkdown from '../utils/markdownLoader';
+
+type ResumeJsonEntry = {
+  startYear: string;
+  endYear: string;
+  position: string;
+  company: string;
+  bullets: string[];
+};
+
+type ResumeJson = {
+  work?: ResumeJsonEntry[];
+  education?: ResumeJsonEntry[];
+};
+
+const RESUME_MD_PATH = 'data/RESUME.md';
+const RESUME_JSON_PATH = 'data/RESUME.json';
+
+// Attempt to locate a resume PDF under src/data, e.g., src/data/resume.pdf
+let resumePdfUrlFromSrc: string | null = null;
+try {
+  // @ts-ignore - Vite replaces this at build time; `as: 'url'` returns string URLs
+  const pdfMods = import.meta.glob('../data/**/*.pdf', { eager: true, as: 'url' });
+  const entries = Object.entries(pdfMods) as Array<[string, string]>;
+  const match = entries.find(([k]) => k.toLowerCase().endsWith('/resume.pdf'))
+    || entries.find(([k]) => /\/data\/resume\.pdf$/i.test(k));
+  if (match) {
+    resumePdfUrlFromSrc = match[1];
+  }
+} catch {
+  // ignore
+}
+
+async function loadResumeJson(): Promise<ResumeJson | null> {
+  // Try Vite eager glob from src first
+  try {
+    // @ts-ignore - Vite replaces this at build time
+    const mods = import.meta.glob('../data/RESUME.json', { eager: true });
+    const values = Object.values(mods) as unknown as Array<{ default: ResumeJson }>;
+    if (values.length && values[0]?.default) {
+      return values[0].default;
+    }
+  } catch {
+    // ignore
+  }
+  // Fallback: try fetching from public/data/RESUME.json
+  try {
+    const res = await fetch('/data/RESUME.json');
+    if (res.ok) {
+      return (await res.json()) as ResumeJson;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }>
+  = ({ title, items }) => (
+  <section className="mt-6">
+    <h2 className="text-xl font-semibold mb-3">{title}</h2>
+    <ul className="space-y-4">
+      {items.map((it, idx) => (
+        <li key={`${title}-${it.company}-${idx}`} className="border-l-2 border-gray-300 pl-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium">{it.position} — {it.company}</h3>
+            <span className="text-sm text-gray-500">{it.startYear} – {it.endYear}</span>
+          </div>
+          {it.bullets?.length ? (
+            <ul className="list-disc ml-6 mt-2 text-gray-700">
+              {it.bullets.map((b, i) => (<li key={i}>{b}</li>))}
+            </ul>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  </section>
+);
+
+const Resume: React.FC = () => {
+  const [md, setMd] = React.useState<string>('');
+  const [json, setJson] = React.useState<ResumeJson | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      // Try markdown first
+      const text = await loadMarkdown(RESUME_MD_PATH);
+      if (text) {
+        if (mounted) {
+          setMd(text);
+          setLoading(false);
+        }
+        return;
+      }
+      // Fallback to JSON
+  const j = await loadResumeJson();
+      if (mounted) {
+        setJson(j);
+        setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const resumePdfUrl = resumePdfUrlFromSrc;
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold inline-flex items-center gap-2"><FaFilePdf /> Resume</h1>
+      </div>
+      {resumePdfUrl && (
+        <div className="mb-4">
+          <a
+            href={resumePdfUrl}
+            download
+            className="inline-flex items-center gap-2 px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            <FaFilePdf />
+            <span>Download Resume</span>
+          </a>
+        </div>
+      )}
+
+      {/* PDF preview */}
+      {resumePdfUrl && (
+        <div className="mb-6 border rounded overflow-hidden bg-white">
+          <object data={resumePdfUrl} type="application/pdf" className="w-full" style={{ height: 360 }}>
+            <iframe src={resumePdfUrl} className="w-full" style={{ height: 360 }} title="Resume preview" />
+          </object>
+        </div>
+      )}
+
+      {loading && <p className="text-gray-500">Loading…</p>}
+
+      {/* Markdown mode */}
+      {!loading && md && (
+        <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            {md}
+          </ReactMarkdown>
+        </div>
+      )}
+
+      {/* JSON mode */}
+      {!loading && !md && json && (
+        <div>
+          {json.work?.length ? <Section title="Work" items={json.work} /> : null}
+          {json.education?.length ? <Section title="Education" items={json.education} /> : null}
+          {!json.work?.length && !json.education?.length && (
+            <p className="text-gray-700">Your <code>src/data/RESUME.json</code> is empty.</p>
+          )}
+        </div>
+      )}
+
+      {!loading && !md && !json && (
+        <p className="text-gray-700">Add either <code>src/data/RESUME.md</code> or <code>src/data/RESUME.json</code> to populate this page.</p>
+      )}
+    </div>
+  );
+};
+
+export default Resume;
