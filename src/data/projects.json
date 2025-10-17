@@ -3,13 +3,15 @@
     "id": "project-1",
     "title": "Project One",
     "description": "A brief description of Project One.",
-    "link": "/projects/project-1"
+    "link": "/projects/project-1",
+    "markdownUrl": "src/data/projects/CAE/README.md"
   },
   {
     "id": "project-2",
     "title": "Project Two",
     "description": "A brief description of Project Two.",
-    "link": "/projects/project-2"
+    "link": "/projects/project-2",
+    "markdownUrl": "https://raw.githubusercontent.com/facebook/react/main/README.md"
   },
   {
     "id": "project-3",

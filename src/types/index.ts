@@ -3,6 +3,14 @@ export interface Project {
     title: string;
     description: string;
     link: string;
+    /**
+     * Optional URL to markdown content for detailed project description.
+     * Can be:
+     * - A relative path to a local markdown file within src (e.g., 
+     *   "/src/data/projects/<project-id>/README.md" or "./data/projects/<project-id>/README.md")
+     * - A public URL (e.g., a GitHub README URL)
+     */
+    markdownUrl?: string;
 }
 
 export interface CVData {

@@ -1,6 +1,7 @@
 
 # your stuff is in here
-/public/data/*
+/public/data/
+/src/data/
 
 # Node modules
 node_modules/
