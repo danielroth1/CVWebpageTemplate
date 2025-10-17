@@ -2,12 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
 import cv from '../data/cv.json';
+import personal_photo from '../assets/personal_photo.jpg';
 
 const Home: React.FC = () => {
     return (
         <div className="max-w-6xl mx-auto">
             <header className="px-4 py-8 flex items-center gap-6">
-                <img src="/personal_photo.jpg" alt={`${cv.name} photo`} className="w-24 h-24 rounded-full object-cover shadow-sm" />
+                <img src={personal_photo} alt={`${cv.name} photo`} className="w-24 h-24 rounded-full object-cover shadow-sm" />
                 <div>
                     <h1 className="text-3xl font-bold">{cv.name}</h1>
                     <p className="text-gray-600">{cv.title}</p>

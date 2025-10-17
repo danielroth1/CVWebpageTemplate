@@ -1,22 +1,23 @@
 [
   {
-    "id": "project-1",
-    "title": "Project One",
-    "description": "A brief description of Project One.",
-    "link": "/projects/project-1",
-    "markdownUrl": "src/data/projects/CAE/README.md"
+    "id": "cae",
+    "title": "CAE",
+    "description": "CAE is a tool for the simulation of rigid bodies and deformable objects.",
+    "link": "/projects/cae",
+    "markdownUrl": "https://raw.githubusercontent.com/danielroth1/CAE/refs/heads/master/README.md"
   },
   {
-    "id": "project-2",
-    "title": "Project Two",
-    "description": "A brief description of Project Two.",
-    "link": "/projects/project-2",
-    "markdownUrl": "https://raw.githubusercontent.com/facebook/react/main/README.md"
+    "id": "simple-job-apply",
+    "title": "SimpleJobApply",
+    "description": "Tool that simplifies the generation of job applications by scanning for keywords and combining corresponding paragraphs.",
+    "link": "/projects/simple-job-apply",
+    "markdownUrl": "https://raw.githubusercontent.com/danielroth1/SimpleJobApply/refs/heads/main/README.md"
   },
   {
     "id": "project-3",
     "title": "Project Three",
     "description": "A brief description of Project Three.",
-    "link": "/projects/project-3"
+    "link": "/projects/project-3",
+    "markdownUrl": "src/data/projects/CAE/README.md"
   }
 ]

@@ -4,6 +4,7 @@ import projects from '../data/projects.json';
 import loadMarkdown, { getMarkdownAssetUrl } from '../utils/markdownLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -46,7 +47,9 @@ const ProjectDetail: React.FC = () => {
                 <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
                     {loading && <p className="text-gray-500">Loading details…</p>}
                     {!loading && md && (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                            {md}
+                        </ReactMarkdown>
                     )}
                     {!loading && !md && (
                         <p className="text-gray-700">{project.description}</p>
