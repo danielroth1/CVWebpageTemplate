@@ -21,6 +21,30 @@ try {
   previewEntries = [];
 }
 
+// Eagerly import all preview videos under data/projects/**/preview.<ext> as URLs
+// Supported extensions: mp4, webm, ogg
+type VideoEntry = { key: string; url: string; dir: string; folder: string; normFolder: string; type: string };
+let previewVideoEntries: VideoEntry[] = [];
+try {
+  // @ts-ignore - Vite replaces this at build time
+  const vmods = import.meta.glob('../data/projects/**/preview.{mp4,webm,ogg}', {
+    eager: true,
+    as: 'url',
+  }) as Record<string, string>;
+  previewVideoEntries = Object.entries(vmods).map(([key, url]) => {
+    const normalizedKey = key.replace(/\\/g, '/');
+    const dir = normalizedKey.replace(/\/[^/]*$/, '');
+    const parts = dir.split('/');
+    const folder = parts[parts.length - 1] ?? '';
+    const normFolder = normalize(folder);
+    const ext = normalizedKey.split('.').pop()?.toLowerCase() ?? '';
+    const type = ext === 'mp4' ? 'video/mp4' : ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/*';
+    return { key: normalizedKey, url, dir, folder, normFolder, type };
+  });
+} catch {
+  previewVideoEntries = [];
+}
+
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
@@ -64,3 +88,35 @@ export function getProjectPreviewUrl(project: Project): string | undefined {
 }
 
 export default getProjectPreviewUrl;
+
+export type ProjectPreviewVideoSource = { src: string; type: string };
+
+export function getProjectPreviewVideoSources(project: Project): ProjectPreviewVideoSource[] {
+  if (!previewVideoEntries.length) return [];
+
+  // 1) Try to resolve by markdown directory (local paths only)
+  const mdDir = dirFromMarkdownUrl(project.markdownUrl ?? '');
+  let matches: VideoEntry[] = [];
+  if (mdDir) {
+    matches = previewVideoEntries.filter((e) => e.dir.toLowerCase().endsWith(mdDir.toLowerCase()));
+  }
+
+  // 2) Fallback: match by folder name against project id/title
+  if (!matches.length) {
+    const candidates: string[] = [project.id, project.title];
+    const normalized = candidates.map((c) => normalize(c));
+    matches = previewVideoEntries.filter((e) => normalized.includes(e.normFolder));
+  }
+
+  if (!matches.length) return [];
+
+  // Deduplicate by type and sort by preferred order: webm, mp4, ogg
+  const order = ['video/webm', 'video/mp4', 'video/ogg'];
+  const byType = new Map<string, ProjectPreviewVideoSource>();
+  for (const m of matches) {
+    if (!byType.has(m.type)) {
+      byType.set(m.type, { src: m.url, type: m.type });
+    }
+  }
+  return Array.from(byType.values()).sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+}
