@@ -5,12 +5,14 @@ import type { Project } from '../types';
 
 interface Props {
     projects?: Project[];
+    showMaxNumProjects?: number;
 }
 
-const ProjectList: React.FC<Props> = ({ projects = (projectsData as any).projects }) => {
+const ProjectList: React.FC<Props> = ({ projects = (projectsData as any).projects, showMaxNumProjects = null }) => {
+    const projectsShown = showMaxNumProjects ? projects.slice(0, showMaxNumProjects) : projects;
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project: Project) => (
+            {projectsShown.map((project: Project) => (
                 <ProjectCard key={project.id} project={project} />
             ))}
         </div>
