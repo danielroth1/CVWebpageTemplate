@@ -91,8 +91,34 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
 
             <div className="flex-1 min-w-0">
               <div>
-                <div className="font-semibold">{it.position}</div>
-                <div>{it.company}</div>
+                <div className="font-semibold">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      p: ({ node, ...props }) => <span {...props} />,
+                      a: ({ node, className, ...props }) => (
+                        <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
+                      ),
+                    }}
+                  >
+                    {it.position}
+                  </ReactMarkdown>
+                </div>
+                <div>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      p: ({ node, ...props }) => <span {...props} />,
+                      a: ({ node, className, ...props }) => (
+                        <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
+                      ),
+                    }}
+                  >
+                    {it.company}
+                  </ReactMarkdown>
+                </div>
                 {/* Under the company: type · start–end · duration */}
                 <div className="text-sm text-gray-500 mt-0.5">
                   {it.type ? (
