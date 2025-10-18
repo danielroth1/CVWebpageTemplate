@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import loadMarkdown from '../utils/markdownLoader';
+import { SkillBadgeMarkdown } from './SkillBadge';
 
 type ResumeJsonEntry = {
   startYear: string;
@@ -72,6 +73,20 @@ async function loadResumeJson(): Promise<ResumeJson | null> {
 
 import { formatDuration, getCompanyImageUrl } from '../utils/resume';
 
+type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
+
+const baseMarkdownComponents = {
+  skill: SkillBadgeMarkdown,
+} as unknown as MarkdownComponents;
+
+const inlineMarkdownComponents = {
+  skill: SkillBadgeMarkdown,
+  p: ({ node, ...props }: { node?: unknown }) => <span {...props} />,
+  a: ({ node, className, ...props }: { node?: unknown; className?: string }) => (
+    <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
+  ),
+} as unknown as MarkdownComponents;
+
 const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title, items }) => (
   <section className="mt-6">
     <h2 className="text-xl font-semibold mb-3">{title}</h2>
@@ -95,12 +110,7 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
-                    components={{
-                      p: ({ node, ...props }) => <span {...props} />,
-                      a: ({ node, className, ...props }) => (
-                        <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
-                      ),
-                    }}
+                    components={inlineMarkdownComponents}
                   >
                     {it.position}
                   </ReactMarkdown>
@@ -109,12 +119,7 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
-                    components={{
-                      p: ({ node, ...props }) => <span {...props} />,
-                      a: ({ node, className, ...props }) => (
-                        <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
-                      ),
-                    }}
+                    components={inlineMarkdownComponents}
                   >
                     {it.company}
                   </ReactMarkdown>
@@ -142,15 +147,7 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw]}
-                        components={{
-                          p: ({ node, ...props }) => <span {...props} />,
-                          a: ({ node, className, ...props }) => (
-                            <a
-                              {...props}
-                              className={`text-blue-600 hover:underline ${className ?? ''}`}
-                            />
-                          ),
-                        }}
+                        components={inlineMarkdownComponents}
                       >
                         {b}
                       </ReactMarkdown>
@@ -235,7 +232,11 @@ const Resume: React.FC<ResumeProps> = ({ showTitle = false, showPdfPreview = fal
       {/* Markdown mode */}
       {!loading && md && (
         <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={baseMarkdownComponents}
+          >
             {md}
           </ReactMarkdown>
         </div>

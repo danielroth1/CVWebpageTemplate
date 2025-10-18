@@ -5,10 +5,19 @@ import loadMarkdown, { getMarkdownAssetUrl } from '../utils/markdownLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import SkillBadge, { SkillBadgeMarkdown } from '../components/SkillBadge';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const project = projectsData.projects.find((p) => p.id === id);
+    const skills = project?.skills ?? [];
+
+    type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
+
+    const markdownComponents = React.useMemo(
+        () => ({ skill: SkillBadgeMarkdown } as unknown as MarkdownComponents),
+        [],
+    );
 
     const [md, setMd] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
@@ -40,14 +49,26 @@ const ProjectDetail: React.FC = () => {
                 </>
             ) : (
                 <>
-            <h1 className="text-2xl font-bold mb-4">{project.title}</h1>
+            <h1 className="text-2xl font-bold mb-3">{project.title}</h1>
+
+            {skills.length ? (
+                <div className="mb-4 flex flex-wrap gap-2">
+                    {skills.map((skill) => (
+                        <SkillBadge key={skill}>{skill}</SkillBadge>
+                    ))}
+                </div>
+            ) : null}
 
             {/* Fallback to plain description while markdown loads or if none provided */}
             {markdownUrl ? (
                 <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
                     {loading && <p className="text-gray-500">Loading details…</p>}
                     {!loading && md && (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                            components={markdownComponents}
+                        >
                             {md}
                         </ReactMarkdown>
                     )}

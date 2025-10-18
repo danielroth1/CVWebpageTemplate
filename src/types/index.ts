@@ -3,6 +3,7 @@ export interface Project {
     title: string;
     description: string;
     link: string;
+    skills?: string[];
     /**
      * Optional URL to markdown content for detailed project description.
      * Can be:
