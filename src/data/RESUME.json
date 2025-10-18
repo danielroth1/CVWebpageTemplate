@@ -1,0 +1,65 @@
+{
+  "profile": {
+    "name": "Daniel Roth",
+    "title": "Software Developer",
+    "email": "daniel.roth@mailbase.info",
+    "phone": "",
+    "skills": ["C++", "Java", "React", "TypeScript", "ASP.NET", "Tailwind CSS"]
+  },
+  "work": [
+    {
+      "startYear": "09.2021",
+      "endYear": "Today",
+      "position": "Senior Software Developer",
+      "company": "exocad",
+      "type": "Full-time",
+      "company_image": "exocad.jpg",
+      "bullets": [
+        "Smile Creator",
+        "AI integration",
+        "C++ / C#"
+      ]
+    },
+    {
+      "startYear": "01.2018",
+      "endYear": "09.2021",
+      "position": "Software Developer",
+      "company": "ESI Group",
+      "type": "Full-time",
+      "company_image": "esi-group.jpg",
+      "bullets": [
+        "Smile Creator",
+        "AI integration",
+        "C++ / C#"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "startYear": "2015",
+      "endYear": "2017",
+      "position": "M.Sc. Informatik",
+      "company": "Technische Universität Darmstadt",
+      "company_image": "tu-darmstadt.jpg",
+      "bullets": [
+        "Robotics, Computational, and Computer Engineering",
+	      "Visual & Interactive Computing",
+	      "Web, Knowledge, and Information Processing",
+        "Implementing [JNG](/projects/jng), a game in Java",
+        "Simulation of rigid and soft body dynamics (foundation for [CAE](/projects/cae))"
+      ]
+    },
+    {
+      "startYear": "2012",
+      "endYear": "2015",
+      "position": "B.Sc. Informatik",
+      "company": "Technische Universität Darmstadt",
+      "company_image": "tu-darmstadt.jpg",
+      "bullets": [
+        "Bachelor thesis: Development of Dijkstra based routing algorithm for night train search for the DB.",
+        "Developing of an algorithm for the compression of time table information data",
+        "Agile software development in Java / C++"
+      ]
+    }
+  ]
+}

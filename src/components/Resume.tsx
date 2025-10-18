@@ -112,7 +112,23 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
               {it.bullets?.length ? (
                 <ul className="list-disc ml-5 mt-2 text-gray-700">
                   {it.bullets.map((b, i) => (
-                    <li key={i}>{b}</li>
+                    <li key={i}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          p: ({ node, ...props }) => <span {...props} />,
+                          a: ({ node, className, ...props }) => (
+                            <a
+                              {...props}
+                              className={`text-blue-600 hover:underline ${className ?? ''}`}
+                            />
+                          ),
+                        }}
+                      >
+                        {b}
+                      </ReactMarkdown>
+                    </li>
                   ))}
                 </ul>
               ) : null}
