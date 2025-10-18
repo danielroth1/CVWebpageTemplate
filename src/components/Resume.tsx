@@ -11,6 +11,9 @@ type ResumeJsonEntry = {
   position: string;
   company: string;
   bullets: string[];
+  // New optional fields
+  type?: string; // Full-time / Part-time etc.
+  company_image?: string; // file name under src/data/company_images
 };
 
 type ResumeJson = {
@@ -67,23 +70,54 @@ async function loadResumeJson(): Promise<ResumeJson | null> {
   return null;
 }
 
+import { formatDuration, getCompanyImageUrl } from '../utils/resume';
+
 const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title, items }) => (
   <section className="mt-6">
     <h2 className="text-xl font-semibold mb-3">{title}</h2>
     <ul className="space-y-4">
       {items.map((it, idx) => (
         <li key={`${title}-${it.company}-${idx}`} className="border-l-2 border-gray-300 pl-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium">{it.position} — {it.company}</h3>
-            <span className="text-sm text-gray-500">{it.startYear} – {it.endYear}</span>
+          <div className="flex items-start gap-3">
+            {/* Company image, fixed width, uniform scaling */}
+            {it.company_image ? (
+              <img
+                src={getCompanyImageUrl(it.company_image)}
+                alt={`${it.company} logo`}
+                className="w-12 h-auto object-contain flex-shrink-0"
+                loading="lazy"
+              />
+            ) : null}
+
+            <div className="flex-1 min-w-0">
+              <div>
+                <div className="font-semibold">{it.position}</div>
+                <div>{it.company}</div>
+                {/* Under the company: type · start–end · duration */}
+                <div className="text-sm text-gray-500 mt-0.5">
+                  {it.type ? (
+                    <span>
+                      {it.type}
+                      <span className="mx-1">·</span>
+                    </span>
+                  ) : null}
+                  <span>
+                    {it.startYear} – {it.endYear}
+                  </span>
+                  <span className="mx-1">·</span>
+                  <span>{formatDuration(it.startYear, it.endYear)}</span>
+                </div>
+              </div>
+
+              {it.bullets?.length ? (
+                <ul className="list-disc ml-5 mt-2 text-gray-700">
+                  {it.bullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
-          {it.bullets?.length ? (
-            <ul className="list-disc ml-6 mt-2 text-gray-700">
-              {it.bullets.map((b, i) => (
-                <li key={i}>{b}</li>
-              ))}
-            </ul>
-          ) : null}
         </li>
       ))}
     </ul>
@@ -122,7 +156,7 @@ const Resume: React.FC<ResumeProps> = ({ showTitle = false, showPdfPreview = fal
   const resumePdfUrl = resumePdfUrlFromSrc;
 
   return (
-    <div className={`max-w-4xl mx-auto ${className ?? ''}`}>
+    <div className={`max-w-none mx-auto ${className ?? ''}`}>
       {showTitle && (
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold inline-flex items-center gap-2">
