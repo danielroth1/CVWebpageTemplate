@@ -23,6 +23,17 @@ const ProjectDetail: React.FC = () => {
     const [loading, setLoading] = React.useState<boolean>(false);
     const markdownUrl = project?.markdownUrl;
 
+    // Scroll to top whenever this detail page mounts or the project id changes
+    React.useEffect(() => {
+        try {
+            // Modern browsers
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+        } catch (e) {
+            // Fallback for older browsers
+            window.scrollTo(0, 0);
+        }
+    }, [id]);
+
     React.useEffect(() => {
         let mounted = true;
         async function run() {
