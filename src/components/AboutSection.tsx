@@ -5,6 +5,12 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import loadMarkdown from '../utils/markdownLoader';
 import { SkillBadgeMarkdown } from './SkillBadge';
+import {
+  GithubButtonMarkdown,
+  LinkedInButtonMarkdown,
+  DownloadButtonMarkdown,
+  IconButtonMarkdown,
+} from './IconButton';
 
 const ABOUT_PATH = 'data/ABOUT_ME.md';
 
@@ -17,6 +23,10 @@ type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
 
 const markdownComponents = {
   skill: SkillBadgeMarkdown,
+  btn: IconButtonMarkdown,
+  github: GithubButtonMarkdown,
+  linkedin: LinkedInButtonMarkdown,
+  download: DownloadButtonMarkdown,
 } as unknown as MarkdownComponents;
 
 const AboutSection: React.FC<AboutSectionProps> = ({ showTitle = false, className }) => {

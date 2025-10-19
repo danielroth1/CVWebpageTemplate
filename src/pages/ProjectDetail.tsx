@@ -7,6 +7,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import SkillBadge, { SkillBadgeMarkdown } from '../components/SkillBadge';
+import {
+    DownloadButtonMarkdown,
+    GithubButtonMarkdown,
+    IconButtonMarkdown,
+    LinkedInButtonMarkdown,
+} from '../components/IconButton';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 
@@ -18,7 +24,16 @@ const ProjectDetail: React.FC = () => {
     type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
 
     const markdownComponents = React.useMemo(
-        () => ({ skill: SkillBadgeMarkdown } as unknown as MarkdownComponents),
+        () =>
+            ({
+                skill: SkillBadgeMarkdown,
+                // generic button wrapper: <btn kind="github|linkedin|download" href="...">Text</btn>
+                btn: IconButtonMarkdown,
+                // convenience tags
+                github: GithubButtonMarkdown,
+                linkedin: LinkedInButtonMarkdown,
+                download: DownloadButtonMarkdown,
+            } as unknown as MarkdownComponents),
         [],
     );
 
@@ -75,7 +90,7 @@ const ProjectDetail: React.FC = () => {
     }, [clocUrl]);
 
     return (
-        <div className="max-w-3xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4">
             {!project ? (
                 <>
                     <p className="text-red-600">Project not found.</p>

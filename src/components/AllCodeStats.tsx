@@ -93,7 +93,7 @@ const AllCodeStats: React.FC = () => {
       <div className="text-sm text-gray-800">
         <div className="mb-3 space-y-2">
           <div className="flex justify-between">
-            <div className="text-xs text-gray-700">Files (sum of projects):</div>
+            <div className="text-xs text-gray-700">Total number of files:</div>
             <div className="text-xs font-mono"><strong>{totalFiles || 0}</strong></div>
           </div>
           <div className="flex justify-between">
