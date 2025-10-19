@@ -198,4 +198,50 @@ export const DownloadButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
   </IconButton>
 );
 
+// Convenience tags for platform-specific short names: <windows href="...">, <macos>, <linux>
+export const WindowsButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="download"
+    platform="windows"
+    download={toBool(props.download) ?? true}
+    className={props.className}
+    title={props.title}
+    target={props.target}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
+export const MacosButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="download"
+    platform="macos"
+    download={toBool(props.download) ?? true}
+    className={props.className}
+    title={props.title}
+    target={props.target}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
+export const LinuxButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="download"
+    platform="linux"
+    download={toBool(props.download) ?? true}
+    className={props.className}
+    title={props.title}
+    target={props.target}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
 export default IconButton;

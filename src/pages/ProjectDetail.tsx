@@ -13,6 +13,11 @@ import {
     IconButtonMarkdown,
     LinkedInButtonMarkdown,
 } from '../components/IconButton';
+import {
+    WindowsButtonMarkdown,
+    MacosButtonMarkdown,
+    LinuxButtonMarkdown,
+} from '../components/IconButton';
 import resolveMarkdownImage from '../utils/markdownImageResolver';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
@@ -34,6 +39,9 @@ const ProjectDetail: React.FC = () => {
                 github: GithubButtonMarkdown,
                 linkedin: LinkedInButtonMarkdown,
                 download: DownloadButtonMarkdown,
+                windows: WindowsButtonMarkdown,
+                macos: MacosButtonMarkdown,
+                linux: LinuxButtonMarkdown,
                 img: ({ src, alt }: { src?: string; alt?: string }) => {
                     // Resolve image src relative to the markdownUrl used to load this file
                     const resolved = resolveMarkdownImage(markdownUrl, src as string | undefined) || src;
