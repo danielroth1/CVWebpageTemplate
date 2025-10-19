@@ -7,6 +7,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import SkillBadge, { SkillBadgeMarkdown } from '../components/SkillBadge';
+import CodeStats from '../components/CodeStats';
+import clocLanguageMapping from '../data/cloc-mapping.json';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -123,50 +125,11 @@ const ProjectDetail: React.FC = () => {
                         </div>
 
                         <aside className="w-full lg:w-64 flex-shrink-0">
-                            <div className="border border-gray-200 rounded p-4 bg-gray-50">
-                                <h3 className="text-sm font-semibold mb-2">Code stats</h3>
-                                {cloc ? (
-                                    (() => {
-                                        // Prefer summary.total or raw.SUM
-                                        const total = cloc.summary?.total ?? cloc.raw?.SUM ?? null;
-                                        const langs = cloc.summary?.languages ?? null;
-                                        return (
-                                            <div className="text-sm text-gray-800">
-                                                {total ? (
-                                                    <div className="mb-3 space-y-2">
-                                                        <div className="flex justify-between">
-                                                            <div className="text-xs text-gray-700">Files:</div>
-                                                            <div className="text-xs font-mono"><strong>{total.nFiles ?? total.nFiles ?? total.nFiles}</strong></div>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <div className="text-xs text-gray-700">Total lines of code:</div>
-                                                            <div className="text-xs font-mono"><strong className="text-xs font-mono">{total.code ?? total.code ?? total.code}</strong></div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="mb-3">No total summary available</div>
-                                                )}
-                                                {langs && Array.isArray(langs) ? (
-                                                    <>
-                                                        {/* separator between total summary and per-language list */}
-                                                        <div className="my-2 border-t border-gray-200" />
-                                                        <div className="space-y-2 max-h-48 overflow-auto">
-                                                            {langs.map((l: any) => (
-                                                                <div key={l.language} className="flex justify-between">
-                                                                    <div className="text-xs text-gray-700">{l.language}</div>
-                                                                    <div className="text-xs font-mono">{l.code}</div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                ) : null}
-                                            </div>
-                                        );
-                                    })()
-                                ) : (
-                                    <div className="text-sm text-gray-600">No LOC data</div>
-                                )}
-                            </div>
+                            <CodeStats
+                                clocData={cloc}
+                                languageMapping={clocLanguageMapping as Record<string, string>}
+                                overrides={project['cloc-mapping-overwrite']}
+                            />
                         </aside>
                     </div>
                 </div>

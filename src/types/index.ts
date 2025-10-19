@@ -4,6 +4,7 @@ export interface Project {
     description: string;
     link: string;
     skills?: string[];
+    'cloc-mapping-overwrite'?: Record<string, string>;
     /**
      * Optional URL to markdown content for detailed project description.
      * Can be:
