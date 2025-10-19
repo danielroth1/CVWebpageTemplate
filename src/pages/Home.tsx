@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
+import AllCodeStats from '../components/AllCodeStats';
 import resume from '../data/RESUME.json';
 import personal_photo from '../data/personal_photo.jpg';
 import Resume from '../components/Resume';
@@ -89,7 +90,14 @@ const Home: React.FC = () => {
                         <h2 className="text-xl font-semibold">Projects</h2>
                         <Link to="/projects" className="text-blue-600 text-sm hover:underline">View all</Link>
                     </div>
-                    <ProjectList showMaxNumProjects={3}/>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        <div className="flex-1">
+                            <ProjectList showMaxNumProjects={3} />
+                        </div>
+                        <aside className="w-full lg:w-80 flex-shrink-0">
+                            <AllCodeStats />
+                        </aside>
+                    </div>
                 </section>
             </>
         </div>

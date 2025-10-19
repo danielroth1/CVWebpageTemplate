@@ -101,3 +101,33 @@ export async function loadCloc(clocUrl?: string): Promise<any | null> {
 }
 
 export default loadCloc;
+
+// Return all available cloc.json modules discovered at build time (Vite eager glob)
+// or via require.context fallback. This is synchronous and only returns local files
+// bundled with the app.
+export function getAllCloc(): Array<{ key: string; data: any }> {
+  const results: Array<{ key: string; data: any }> = [];
+  try {
+    if (viteClocModules) {
+      for (const [key, data] of Object.entries(viteClocModules)) {
+        results.push({ key, data });
+      }
+      return results;
+    }
+    if (reqCtx) {
+      const keys = reqCtx.keys();
+      for (const k of keys) {
+        try {
+          const data = reqCtx(k);
+          results.push({ key: k, data });
+        } catch {
+          // ignore bad entries
+        }
+      }
+      return results;
+    }
+  } catch {
+    // ignore
+  }
+  return results;
+}
