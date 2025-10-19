@@ -13,6 +13,7 @@ import {
     IconButtonMarkdown,
     LinkedInButtonMarkdown,
 } from '../components/IconButton';
+import resolveMarkdownImage from '../utils/markdownImageResolver';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 
@@ -33,6 +34,16 @@ const ProjectDetail: React.FC = () => {
                 github: GithubButtonMarkdown,
                 linkedin: LinkedInButtonMarkdown,
                 download: DownloadButtonMarkdown,
+                img: ({ src, alt }: { src?: string; alt?: string }) => {
+                    // Resolve image src relative to the markdownUrl used to load this file
+                    const resolved = resolveMarkdownImage(markdownUrl, src as string | undefined) || src;
+                    // Render a normal image; add class to keep it responsive inside prose
+                    // eslint-disable-next-line react/jsx-no-useless-fragment
+                    return (
+                        // <img> needs to be created as React element for rehype-raw compatibility
+                        <img src={resolved} alt={alt as string | undefined} className="max-w-full h-auto rounded-md" />
+                    );
+                },
             } as unknown as MarkdownComponents),
         [],
     );
