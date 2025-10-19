@@ -10,7 +10,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "loc": "node scripts/count-loc.js",
+    "multi-loc": "node scripts/run-multi-loc.js"
   },
   "dependencies": {
     "react": "^18.0.0",
