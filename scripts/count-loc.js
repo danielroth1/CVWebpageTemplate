@@ -16,7 +16,7 @@ const path = require('path');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out = { repoPath: process.cwd(), output: null, excludeDirs: [], notMatchD: null };
+  const out = { repoPath: process.cwd(), output: null, excludeDirs: [], notMatchD: null, excludeExts: [] };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--output' || a === '-o') {
@@ -26,6 +26,11 @@ function parseArgs() {
       out.excludeDirs.push(a.split('=')[1]);
     } else if (a.startsWith('--not-match-d=')) {
       out.notMatchD = a.split('=')[1];
+    } else if (a.startsWith('--exclude-ext=')) {
+      // accept comma-separated extensions
+      const val = a.split('=')[1] || '';
+      const parts = val.split(',').map((s) => s.trim()).filter(Boolean);
+      out.excludeExts.push(...parts);
     } else if (!out._positionalUsed) {
       out.repoPath = path.resolve(a);
       out._positionalUsed = true;
@@ -141,6 +146,12 @@ async function main() {
       });
       const combined = `(?:${escaped.join('|')})`;
       extraClocArgs.push(`--not-match-d=${combined}`);
+    }
+    // handle exclude extensions
+    if (args.excludeExts && args.excludeExts.length) {
+      // normalize extensions: strip leading dots
+      const exts = args.excludeExts.map((e) => String(e).replace(/^\./, '').trim()).filter(Boolean);
+      if (exts.length) extraClocArgs.push(`--exclude-ext=${exts.join(',')}`);
     }
     const json = await runCloc(args.repoPath, extraClocArgs);
     const summary = summarize(json);

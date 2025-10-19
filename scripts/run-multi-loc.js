@@ -29,7 +29,7 @@ function readConfig(configPath) {
   return JSON.parse(raw);
 }
 
-function runEntry(repoRoot, entry, globalExcludes, dryRun) {
+function runEntry(repoRoot, entry, globalExcludes, globalExcludeExts, dryRun) {
   return new Promise((resolve) => {
     const src = entry.src;
     const cv = entry.cv_project;
@@ -41,14 +41,14 @@ function runEntry(repoRoot, entry, globalExcludes, dryRun) {
     const outPath = path.resolve(repoRoot, 'src', 'data', 'projects', cv, 'cloc.json');
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
 
-    // build exclude list: global + entry-specific
-    const excludes = [];
-    if (Array.isArray(globalExcludes)) excludes.push(...globalExcludes);
-    if (Array.isArray(entry.exclude)) excludes.push(...entry.exclude);
+  // build exclude list: global + entry-specific
+  const excludes = [];
+  if (Array.isArray(globalExcludes)) excludes.push(...globalExcludes);
+  if (Array.isArray(entry.exclude)) excludes.push(...entry.exclude);
     // dedupe
     const uniqExcludes = [...new Set(excludes)].filter(Boolean);
 
-      const npmArgs = ['run', 'loc', '--', src, '--output', outPath];
+  const npmArgs = ['run', 'loc', '--', src, '--output', outPath];
       if (uniqExcludes.length) {
         // convert exclude patterns into a single regex for --not-match-d
         // Escape regex special chars (except /) and replace / with a pattern matching both slashes
@@ -58,6 +58,14 @@ function runEntry(repoRoot, entry, globalExcludes, dryRun) {
         });
         const combined = `(?:${parts.join('|')})`;
         npmArgs.push(`--not-match-d=${combined}`);
+      }
+      // handle exclude extensions (global + per-project)
+      const exts = [];
+      if (Array.isArray(globalExcludeExts)) exts.push(...globalExcludeExts);
+      if (Array.isArray(entry.exclude_extensions)) exts.push(...entry.exclude_extensions);
+      const uniqExts = [...new Set(exts.map((e) => String(e).replace(/^\./, '').trim()).filter(Boolean))];
+      if (uniqExts.length) {
+        npmArgs.push(`--exclude-ext=${uniqExts.join(',')}`);
       }
 
     console.log('\n-> Running: npm', npmArgs.join(' '));
@@ -148,11 +156,13 @@ async function main() {
   // 2) object { exclude: [...], projects: [...] }
   let projects = [];
   let globalExcludes = [];
+  let globalExcludeExts = [];
   if (Array.isArray(config)) {
     projects = config;
   } else if (config && Array.isArray(config.projects)) {
     projects = config.projects;
     if (Array.isArray(config.exclude)) globalExcludes = config.exclude;
+    if (Array.isArray(config.exclude_extensions)) globalExcludeExts = config.exclude_extensions;
   } else {
     console.error('Invalid config - expected an array or an object with a "projects" array');
     process.exit(2);
@@ -160,12 +170,12 @@ async function main() {
 
   let allOk = true;
   if (parallel > 1) {
-    const tasks = projects.map((entry) => () => runEntry(repoRoot, entry, globalExcludes, dryRun));
+    const tasks = projects.map((entry) => () => runEntry(repoRoot, entry, globalExcludes, globalExcludeExts, dryRun));
     const results = await runPool(tasks, parallel);
     allOk = results.every((r) => r === true);
   } else {
     for (const entry of projects) {
-      const ok = await runEntry(repoRoot, entry, globalExcludes, dryRun);
+      const ok = await runEntry(repoRoot, entry, globalExcludes, globalExcludeExts, dryRun);
       if (!ok) allOk = false;
     }
   }
