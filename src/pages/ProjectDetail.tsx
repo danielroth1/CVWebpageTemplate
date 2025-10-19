@@ -133,24 +133,32 @@ const ProjectDetail: React.FC = () => {
                                         return (
                                             <div className="text-sm text-gray-800">
                                                 {total ? (
-                                                    <div className="mb-3">
-                                                        <div>Total files: <strong>{total.nFiles ?? total.nFiles ?? total.nFiles}</strong></div>
-                                                        <div>Code: <strong>{total.code ?? total.code ?? total.code}</strong></div>
-                                                        <div>Comments: <strong>{total.comment ?? total.comment ?? total.comment}</strong></div>
-                                                        <div>Blank: <strong>{total.blank ?? total.blank ?? total.blank}</strong></div>
+                                                    <div className="mb-3 space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <div className="text-xs text-gray-700">Files:</div>
+                                                            <div className="text-xs font-mono"><strong>{total.nFiles ?? total.nFiles ?? total.nFiles}</strong></div>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <div className="text-xs text-gray-700">Total lines of code:</div>
+                                                            <div className="text-xs font-mono"><strong className="text-xs font-mono">{total.code ?? total.code ?? total.code}</strong></div>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <div className="mb-3">No total summary available</div>
                                                 )}
                                                 {langs && Array.isArray(langs) ? (
-                                                    <div className="space-y-2 max-h-48 overflow-auto">
-                                                        {langs.map((l: any) => (
-                                                            <div key={l.language} className="flex justify-between">
-                                                                <div className="text-xs text-gray-700">{l.language}</div>
-                                                                <div className="text-xs font-mono">{l.code}</div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                    <>
+                                                        {/* separator between total summary and per-language list */}
+                                                        <div className="my-2 border-t border-gray-200" />
+                                                        <div className="space-y-2 max-h-48 overflow-auto">
+                                                            {langs.map((l: any) => (
+                                                                <div key={l.language} className="flex justify-between">
+                                                                    <div className="text-xs text-gray-700">{l.language}</div>
+                                                                    <div className="text-xs font-mono">{l.code}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </>
                                                 ) : null}
                                             </div>
                                         );

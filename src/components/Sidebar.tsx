@@ -30,7 +30,9 @@ const Sidebar: React.FC = () => {
                     </Link>
                 </li>
             </ul>
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Projects</h3>
+            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                <Link to="/projects" className="hover:underline">Projects</Link>
+            </h3>
             <ul className="space-y-1">
                 {(projectsData as any).projects.map((p: Project) => (
                     <li key={p.id}>
