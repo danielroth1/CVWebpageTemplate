@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import projectsData from '../data/projects.json';
 import loadMarkdown, { getMarkdownAssetUrl } from '../utils/markdownLoader';
+import loadCloc from '../utils/clocLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -21,7 +22,14 @@ const ProjectDetail: React.FC = () => {
 
     const [md, setMd] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
+    const [cloc, setCloc] = React.useState<any | null>(null);
     const markdownUrl = project?.markdownUrl;
+    // derive cloc.json path from markdown or project folder: expect cloc at src/data/projects/<Folder>/cloc.json
+    const clocUrl = React.useMemo(() => {
+        if (!project?.markdownUrl) return undefined;
+        // markdownUrl is like 'src/data/projects/CAE/README.md' => replace README.md with cloc.json
+        return project.markdownUrl.replace(/README\.md$/i, 'cloc.json');
+    }, [project]);
 
     // Scroll to top whenever this detail page mounts or the project id changes
     React.useEffect(() => {
@@ -51,6 +59,19 @@ const ProjectDetail: React.FC = () => {
         };
     }, [markdownUrl]);
 
+    React.useEffect(() => {
+        let mounted = true;
+        async function run() {
+            if (!clocUrl) return;
+            const data = await loadCloc(clocUrl);
+            if (mounted) setCloc(data);
+        }
+        run();
+        return () => {
+            mounted = false;
+        };
+    }, [clocUrl]);
+
     return (
         <div className="max-w-3xl mx-auto px-4">
             {!project ? (
@@ -72,7 +93,10 @@ const ProjectDetail: React.FC = () => {
 
             {/* Fallback to plain description while markdown loads or if none provided */}
             {markdownUrl ? (
-                <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+                // Two-column layout: markdown on the left, LOC summary on the right
+                <div className="max-w-none">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        <div className="prose prose-sm sm:prose lg:prose-lg flex-1">
                     {loading && <p className="text-gray-500">Loading details…</p>}
                     {!loading && md && (
                         <ReactMarkdown
@@ -95,6 +119,47 @@ const ProjectDetail: React.FC = () => {
                         >
                             Open source markdown ↗
                         </a>
+                    </div>
+                        </div>
+
+                        <aside className="w-full lg:w-64 flex-shrink-0">
+                            <div className="border border-gray-200 rounded p-4 bg-gray-50">
+                                <h3 className="text-sm font-semibold mb-2">Code stats</h3>
+                                {cloc ? (
+                                    (() => {
+                                        // Prefer summary.total or raw.SUM
+                                        const total = cloc.summary?.total ?? cloc.raw?.SUM ?? null;
+                                        const langs = cloc.summary?.languages ?? null;
+                                        return (
+                                            <div className="text-sm text-gray-800">
+                                                {total ? (
+                                                    <div className="mb-3">
+                                                        <div>Total files: <strong>{total.nFiles ?? total.nFiles ?? total.nFiles}</strong></div>
+                                                        <div>Code: <strong>{total.code ?? total.code ?? total.code}</strong></div>
+                                                        <div>Comments: <strong>{total.comment ?? total.comment ?? total.comment}</strong></div>
+                                                        <div>Blank: <strong>{total.blank ?? total.blank ?? total.blank}</strong></div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="mb-3">No total summary available</div>
+                                                )}
+                                                {langs && Array.isArray(langs) ? (
+                                                    <div className="space-y-2 max-h-48 overflow-auto">
+                                                        {langs.map((l: any) => (
+                                                            <div key={l.language} className="flex justify-between">
+                                                                <div className="text-xs text-gray-700">{l.language}</div>
+                                                                <div className="text-xs font-mono">{l.code}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })()
+                                ) : (
+                                    <div className="text-sm text-gray-600">No LOC data</div>
+                                )}
+                            </div>
+                        </aside>
                     </div>
                 </div>
             ) : (
