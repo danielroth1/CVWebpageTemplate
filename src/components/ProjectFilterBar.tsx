@@ -61,9 +61,9 @@ const ProjectFilterBar: React.FC<ProjectFilterBarProps> = ({ active, onChange, c
               aria-label={`Filter by skill ${skill}`}
             >
               <SkillBadge
-                className={`cursor-pointer select-none border-2 ${
+                className={`cursor-pointer select-none border-2 transition-all transform-gpu ${
                   selected
-                    ? 'border-primary-700 dark:border-primary-300 bg-primary-200/80 dark:bg-primary-500/30 text-primary-900 dark:text-white font-bold shadow-md ring-2 ring-primary-500/70 dark:ring-primary-400/70 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
+                    ? 'border-primary-700 dark:border-primary-300 bg-primary-700 text-white dark:bg-primary-500 dark:text-white font-bold shadow-lg scale-105 ring-4 ring-primary-400/30 dark:ring-primary-300/30'
                     : 'border-slate-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-300 hover:bg-primary-50/60 dark:hover:bg-slate-700'
                 } `}
               >

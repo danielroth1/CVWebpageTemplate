@@ -28,36 +28,8 @@ const ProjectDetail: React.FC = () => {
     const project = projectsData.projects.find((p) => p.id === id);
     const skills = project?.skills ?? [];
 
+    // Markdown components will be created later (after markdownUrl is defined)
     type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
-
-    const markdownComponents = React.useMemo(
-        () =>
-            ({
-                skill: SkillBadgeMarkdown,
-                // YouTube embed: <youtube id="VIDEO_ID" start="30" title="Intro" />
-                youtube: YouTubeEmbedMarkdown,
-                // generic button wrapper: <btn kind="github|linkedin|download" href="...">Text</btn>
-                btn: IconButtonMarkdown,
-                // convenience tags
-                github: GithubButtonMarkdown,
-                linkedin: LinkedInButtonMarkdown,
-                download: DownloadButtonMarkdown,
-                windows: WindowsButtonMarkdown,
-                macos: MacosButtonMarkdown,
-                linux: LinuxButtonMarkdown,
-                img: ({ src, alt }: { src?: string; alt?: string }) => {
-                    // Resolve image src relative to the markdownUrl used to load this file
-                    const resolved = resolveMarkdownImage(markdownUrl, src as string | undefined) || src;
-                    // Render a normal image; add class to keep it responsive inside prose
-                    // eslint-disable-next-line react/jsx-no-useless-fragment
-                    return (
-                        // <img> needs to be created as React element for rehype-raw compatibility
-                        <img src={resolved} alt={alt as string | undefined} className="max-w-full h-auto rounded-md" />
-                    );
-                },
-            } as unknown as MarkdownComponents),
-        [],
-    );
 
     const [md, setMd] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
@@ -110,6 +82,67 @@ const ProjectDetail: React.FC = () => {
             mounted = false;
         };
     }, [clocUrl]);
+
+    // Create markdown components after markdownUrl is known so image resolution can use it
+    const markdownComponents: Parameters<typeof ReactMarkdown>[0]['components'] = React.useMemo(() => {
+        const comp: any = {
+            skill: SkillBadgeMarkdown,
+            youtube: YouTubeEmbedMarkdown,
+            btn: IconButtonMarkdown,
+            github: GithubButtonMarkdown,
+            linkedin: LinkedInButtonMarkdown,
+            download: DownloadButtonMarkdown,
+            windows: WindowsButtonMarkdown,
+            macos: MacosButtonMarkdown,
+            linux: LinuxButtonMarkdown,
+            img: (props: any) => {
+                const node = props.node as any;
+                const srcAttr = props.src ?? node?.properties?.src;
+                const alt = props.alt ?? node?.properties?.alt;
+                const widthAttr = props.width ?? node?.properties?.width;
+                const heightAttr = props.height ?? node?.properties?.height;
+                const styleAttr = node?.properties?.style ?? props.style;
+
+                const resolved = resolveMarkdownImage(markdownUrl, srcAttr as string | undefined) || srcAttr;
+
+                const parseStyle = (s: string | undefined) => {
+                    if (!s || typeof s !== 'string') return undefined;
+                    return s.split(';').reduce((acc: Record<string, string>, part) => {
+                        const [k, v] = part.split(':');
+                        if (!k || !v) return acc;
+                        const key = k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+                        acc[key] = v.trim();
+                        return acc;
+                    }, {} as Record<string, string>);
+                };
+
+                const parsedStyle = parseStyle(styleAttr);
+
+                const normalizeSize = (val: any) => {
+                    if (val == null) return undefined;
+                    const asNum = Number(val);
+                    if (!Number.isNaN(asNum) && String(val).trim() !== '') return `${asNum}px`;
+                    return String(val);
+                };
+
+                const explicitWidth = normalizeSize(widthAttr ?? parsedStyle?.width);
+                const explicitHeight = normalizeSize(heightAttr ?? parsedStyle?.height);
+                console.log('explicitWidth, explicitHeight:', explicitWidth, explicitHeight);
+                const hasExplicitSize = !!(explicitWidth || explicitHeight);
+
+                const style: Record<string, any> = {
+                    ...(parsedStyle as Record<string, any>),
+                    ...(explicitWidth ? { width: explicitWidth } : {}),
+                    ...(explicitHeight ? { height: explicitHeight } : {}),
+                };
+
+                const className = hasExplicitSize ? 'h-auto rounded-md' : 'max-w-full h-auto rounded-md';
+
+                return <img src={resolved} alt={alt as string | undefined} className={className} style={style} />;
+            },
+        };
+        return comp as unknown as Parameters<typeof ReactMarkdown>[0]['components'];
+    }, [markdownUrl]);
 
     return (
     <div className="w-full px-4">
