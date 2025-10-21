@@ -21,28 +21,25 @@ function clsx(...parts: Array<string | undefined | false>) {
 }
 
 const baseClasses =
-  'inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-semibold shadow-sm no-underline transition-colors';
+  'inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-semibold shadow-sm no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1';
 
 function colorClasses(kind?: Kind, platform?: Platform): string {
-  switch (kind) {
-    case 'github':
-      return 'border-slate-800 text-slate-800 bg-white hover:bg-slate-50';
-    case 'linkedin':
-      return 'border-sky-600 text-sky-700 bg-white hover:bg-sky-50';
-    case 'download':
-      switch (platform) {
-        case 'windows':
-          return 'border-blue-600 text-blue-700 bg-white hover:bg-blue-50';
-        case 'macos':
-          return 'border-zinc-800 text-zinc-900 bg-white hover:bg-zinc-50';
-        case 'linux':
-          return 'border-amber-600 text-amber-700 bg-white hover:bg-amber-50';
-        default:
-          return 'border-emerald-600 text-emerald-700 bg-white hover:bg-emerald-50';
-      }
-    default:
-      return 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50';
+  // Use brand accent ring with subtle background tint; dark mode handled by CSS variables
+  if (kind === 'github') return 'app-border bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-solid)]';
+  if (kind === 'linkedin') return 'app-border bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface-solid)]';
+  if (kind === 'download') {
+    switch (platform) {
+      case 'windows':
+        return 'app-border bg-[var(--color-surface)] text-blue-600 dark:text-blue-300 hover:bg-[var(--color-surface-solid)]';
+      case 'macos':
+        return 'app-border bg-[var(--color-surface)] text-slate-800 dark:text-slate-200 hover:bg-[var(--color-surface-solid)]';
+      case 'linux':
+        return 'app-border bg-[var(--color-surface)] text-amber-600 dark:text-amber-400 hover:bg-[var(--color-surface-solid)]';
+      default:
+        return 'app-border bg-[var(--color-surface)] text-emerald-600 dark:text-emerald-400 hover:bg-[var(--color-surface-solid)]';
+    }
   }
+  return 'app-border bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-solid)]';
 }
 
 function pickIcon(kind?: Kind, platform?: Platform): React.ReactNode {

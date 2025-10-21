@@ -1,0 +1,76 @@
+:root {
+  /* Base light theme tokens */
+  --color-bg: #f7f9fc;
+  --color-bg-alt: #ffffff;
+  --color-surface: #ffffffcc; /* translucent */
+  --color-surface-solid: #ffffff;
+  --color-border: #d9dde4;
+  --color-border-strong: #b9c2d0;
+  --color-text: #1e293b; /* slate-800 */
+  --color-text-muted: #475569; /* slate-600 */
+  --color-text-inverse: #ffffff;
+  --color-primary: #1d8fff;
+  --color-primary-accent: #4ba9ff;
+  --color-accent: #ff951d;
+  --gradient-bg: radial-gradient(circle at 30% 30%, #ffffff, #e3edf7 70%);
+  --shadow-elevate-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-elevate-md: 0 4px 12px -2px rgba(0,0,0,0.15),0 2px 4px -1px rgba(0,0,0,0.1);
+}
+
+html.dark {
+  --color-bg: #0f172a; /* slate-900-ish */
+  --color-bg-alt: #0b1324;
+  --color-surface: rgba(30,41,59,0.7); /* slate-800 + translucency */
+  --color-surface-solid: #1e293b;
+  --color-border: #334155; /* slate-700 */
+  --color-border-strong: #475569; /* slate-600 */
+  --color-text: #e2e8f0; /* slate-200 */
+  --color-text-muted: #94a3b8; /* slate-400 */
+  --color-text-inverse: #0f172a;
+  --color-primary: #4ba9ff; /* shift slightly brighter */
+  --color-primary-accent: #83c3ff;
+  --color-accent: #ffb347;
+  --gradient-bg: radial-gradient(circle at 30% 30%, #162335, #0f172a 70%);
+  --shadow-elevate-sm: 0 1px 2px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-elevate-md: 0 4px 18px -2px rgba(0,0,0,0.6),0 2px 6px -1px rgba(0,0,0,0.5);
+}
+
+/* Utility layer classes (tailwind can also add via @layer but here kept simple) */
+.app-bg { background: var(--color-bg); color: var(--color-text); }
+.app-surface { background: var(--color-surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--color-text); }
+.app-surface-solid { background: var(--color-surface-solid); color: var(--color-text); }
+.app-border { border-color: var(--color-border); }
+.app-border-strong { border-color: var(--color-border-strong); }
+.text-muted { color: var(--color-text-muted); }
+.text-inverse { color: var(--color-text-inverse); }
+.app-link { color: var(--color-primary); }
+.app-link:hover { color: var(--color-primary-accent); }
+.nav-surface { background: var(--color-surface); color: var(--color-text); }
+
+/* Hero-specific high-contrast toggle styling */
+.theme-toggle-hero {
+  background: rgba(255,255,255,0.28) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.5) !important;
+  box-shadow: 0 2px 6px -2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.2);
+}
+.theme-toggle-hero:hover {
+  background: rgba(255,255,255,0.38) !important;
+}
+html.dark .theme-toggle-hero {
+  background: rgba(255,255,255,0.20) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.45) !important;
+}
+html.dark .theme-toggle-hero:hover { background: rgba(255,255,255,0.30) !important; }
+
+.btn-base { display:inline-flex; align-items:center; gap:.5rem; font-weight:600; border:1px solid var(--color-border); padding:.5rem .9rem; border-radius:.65rem; background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-elevate-sm); }
+.btn-base:hover { box-shadow: var(--shadow-elevate-md); }
+.btn-brand { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-brand:hover { background: var(--color-primary); color: var(--color-text-inverse); }
+
+.card { background: var(--color-surface); border:1px solid var(--color-border); box-shadow: var(--shadow-elevate-sm); border-radius:1rem; }
+.card:hover { box-shadow: var(--shadow-elevate-md); }
+
+.prose-theme-light.prose { --tw-prose-body: var(--color-text); }
+html.dark .prose-theme-dark.prose { --tw-prose-body: var(--color-text); }

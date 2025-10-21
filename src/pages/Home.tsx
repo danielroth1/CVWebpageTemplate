@@ -1,40 +1,28 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { /* Link */ } from 'react-router-dom';
+import HeroHeader from '../components/HeroHeader';
 import ProjectList from '../components/ProjectList';
 import AllCodeStats from '../components/AllCodeStats';
 import resume from '../data/RESUME.json';
 import personal_photo from '../data/personal_photo.jpg';
 import Resume from '../components/Resume';
 import AboutSection from '../components/AboutSection';
+import projectsData from '../data/projects.json'; // still used for counts if needed later
 
 const Home: React.FC = () => {
     // Profile information now lives in RESUME.json
     const profile = (resume as any).profile as { name: string; title: string; skills: string[] } | undefined;
     const work = (resume as any).work as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
     const education = (resume as any).education as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
-    const [showFullResume, setShowFullResume] = React.useState(true);
+    const showFullResume = true; // overview toggle removed
+    // Project filters now handled internally by ProjectList; no local state needed
     return (
-        <div className="max-w-6xl mx-auto">
-            <header className="px-4 py-8 flex items-center gap-6">
-                <img src={personal_photo} alt={`${profile?.name ?? 'Profile'} photo`} className="w-24 h-24 rounded-full object-cover shadow-sm" />
-                <div className="flex-1">
-                    <h1 className="text-3xl font-bold">{profile?.name}</h1>
-                    <p className="text-gray-600">{profile?.title}</p>
-                </div>
-                <div className="px-4">
-                    <button
-                        type="button"
-                        onClick={() => setShowFullResume((v) => !v)}
-                        className="text-sm px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
-                        aria-pressed={showFullResume}
-                    >
-                        {showFullResume ? 'Show overview' : 'Show full resume'}
-                    </button>
-                </div>
-            </header>
+        <div className="mx-auto">
+            <HeroHeader />
+            {/* Overview toggle removed for streamlined UI */}
             <>
             {/* Show About markdown at the beginning of the overview */}
-            <section className="px-4 pb-10">
+            <section className="px-14 pb-10 mt-4">
                 <div className="mb-6">
                     <AboutSection showTitle={false} />
                 </div>
@@ -86,17 +74,13 @@ const Home: React.FC = () => {
             )}
 
                 <section className="px-4 pb-10">
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-xl font-semibold">Projects</h2>
-                        <Link to="/projects" className="text-blue-600 text-sm hover:underline">View all</Link>
-                    </div>
-                    <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="flex-1">
-                            <ProjectList showMaxNumProjects={3} />
+                    {/* Projects section tightened with a max-width container */}
+                    <div className="max-w-6xl space-y-4">
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <h2 className="text-xl font-semibold">Projects</h2>
                         </div>
-                        <aside className="w-full lg:w-80 flex-shrink-0">
-                            <AllCodeStats />
-                        </aside>
+                        {/* Project cards grid */}
+                        <ProjectList showMaxNumProjects={3} showFilterBar={false} />
                     </div>
                 </section>
             </>

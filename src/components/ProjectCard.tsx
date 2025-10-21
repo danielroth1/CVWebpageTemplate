@@ -23,15 +23,20 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         }
     }, [hovered]);
     return (
-        <div className="rounded border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+        // Make entire card clickable via Link for better discoverability.
+        // NOTE: Avoid nesting another <Link> inside; replace the inline "View Project" link with a styled span.
+        <Link
+            to={project.link}
+            className="group block rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 backdrop-blur p-4 shadow-elevate-sm hover:shadow-elevate-md transition-all duration-300 focus-visible:shadow-elevate-md relative cursor-pointer focus:outline-none focus-visible:ring focus-visible:ring-primary-500"
+            aria-label={`View project: ${project.title}`}
+            onPointerEnter={() => setHovered(true)}
+            onPointerLeave={() => setHovered(false)}
+            onFocus={() => setHovered(true)}
+            onBlur={() => setHovered(false)}
+        >
             {(preview || videoSources.length) && (
                 <div 
                     className="mb-3 -mt-1 -mx-1 relative h-32 overflow-hidden rounded"
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
-                    onFocus={() => setHovered(true)}
-                    onBlur={() => setHovered(false)}
-                    tabIndex={0}
                 >
                     {/* Image poster */}
                     {preview && (
@@ -60,17 +65,23 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                     )}
                 </div>
             )}
-            <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-            <p className="text-sm text-gray-700 mb-3">{project.description}</p>
+            <h3 className="text-base font-semibold mb-2 text-slate-800 dark:text-slate-100 tracking-tight group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors">
+                {project.title}
+            </h3>
+            <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-3">
+                {project.description}
+            </p>
             {skills.length ? (
                 <div className="mb-3 flex flex-wrap gap-2">
                     {skills.map((skill) => (
-                        <SkillBadge key={skill}>{skill}</SkillBadge>
+                        <SkillBadge key={skill} className="hover:shadow-glow transition-shadow" >
+                          <span title={skill}>{skill}</span>
+                        </SkillBadge>
                     ))}
                 </div>
             ) : null}
-            <Link to={project.link} className="inline-block text-sm text-blue-600 hover:underline">View Project →</Link>
-        </div>
+                                    {/* Removed explicit "View Project" call to action; entire card is now clickable */}
+                </Link>
     );
 };
 

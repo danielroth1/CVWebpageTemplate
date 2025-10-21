@@ -84,39 +84,120 @@ function aggregateAll(): { skills: Array<{ skill: string; code: number }>; total
   return { skills, totalCode, totalFiles };
 }
 
-const AllCodeStats: React.FC = () => {
+interface AllCodeStatsProps {
+  /** Whether the aggregated stats panel should start collapsed */
+  defaultCollapsed?: boolean;
+  /** Callback when user toggles collapsed state */
+  onToggleCollapsed?: (collapsed: boolean) => void;
+}
+
+const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, onToggleCollapsed }) => {
   const { skills, totalCode, totalFiles } = React.useMemo(() => aggregateAll(), []);
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = React.useState(false);
+  const [animatedTotals, setAnimatedTotals] = React.useState({ files: 0, code: 0 });
+  const [animatedSkills, setAnimatedSkills] = React.useState<Record<string, number>>({});
+
+  // IntersectionObserver triggers first-time animation
+  React.useEffect(() => {
+    if (!ref.current || visible) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setVisible(true);
+        }
+      },
+      { threshold: 0.25 }
+    );
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [visible]);
+
+  // Run count-up when visible first time
+  React.useEffect(() => {
+    if (!visible) return;
+    const duration = 2000; // ms full duration for largest number
+    const start = performance.now();
+    const skillTargets = skills.reduce((acc, s) => { acc[s.skill] = s.code; return acc; }, {} as Record<string, number>);
+    const maxValue = Math.max(totalFiles || 0, totalCode || 0, ...skills.map(s => s.code));
+    function tick(now: number) {
+      const elapsed = now - start;
+      const baseProgress = Math.min(1, elapsed / duration); // 0->1 over full duration
+      // Each value uses a linear mapping so smaller values finish earlier (they reach target once fraction >= value/maxValue)
+      const totalFilesValue = Math.round(Math.min(1, baseProgress * (maxValue / (totalFiles || 1))) * (totalFiles || 0));
+      const totalCodeValue = Math.round(Math.min(1, baseProgress * (maxValue / (totalCode || 1))) * (totalCode || 0));
+      setAnimatedTotals({ files: totalFilesValue, code: totalCodeValue });
+      const perSkillEntries = Object.entries(skillTargets).map(([k, v]) => {
+        const scaled = Math.round(Math.min(1, baseProgress * (maxValue / (v || 1))) * v);
+        return [k, scaled];
+      });
+      setAnimatedSkills(Object.fromEntries(perSkillEntries));
+      if (baseProgress < 1) requestAnimationFrame(tick);
+    }
+    const r = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(r);
+  }, [visible, skills, totalCode, totalFiles]);
+
+  const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
+  const toggle = () => setCollapsed(c => { const next = !c; onToggleCollapsed?.(next); return next; });
 
   return (
-    <div className="border border-gray-200 rounded p-4 bg-gray-50">
-      <h3 className="text-sm font-semibold mb-2">All projects – code stats</h3>
-      <div className="text-sm text-gray-800">
-        <div className="mb-3 space-y-2">
-          <div className="flex justify-between">
-            <div className="text-xs text-gray-700">Total number of files:</div>
-            <div className="text-xs font-mono"><strong>{totalFiles || 0}</strong></div>
-          </div>
-          <div className="flex justify-between">
-            <div className="text-xs text-gray-700">Total lines of code:</div>
-            <div className="text-xs font-mono"><strong>{totalCode || 0}</strong></div>
-          </div>
+    // Component itself no longer sticky; parent aside handles sticky behavior on large screens
+    <div ref={ref} className={(collapsed ? '' : 'app-border border rounded-xl p-4 app-surface min-w-[14rem] shadow-sm')}>
+      {collapsed ? (
+        <button
+          type="button"
+          onClick={toggle}
+          className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+          aria-expanded={!collapsed}
+          aria-label="Show all projects code statistics"
+        >
+          Show Stats
+        </button>
+      ) : (
+        <>
+        <div className="flex items-center justify-between mb-2 mr-3">
+          <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+          <button
+            type="button"
+            onClick={toggle}
+            className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+            aria-expanded={!collapsed}
+            aria-label="Hide all projects code statistics"
+          >
+            Hide
+          </button>
         </div>
-        {skills.length ? (
-          <>
-            <div className="my-2 border-t border-gray-200" />
-            <div className="space-y-2 max-h-60 overflow-auto">
-              {skills.map((s) => (
-                <div key={s.skill} className="flex justify-between gap-3">
-                  <div className="flex items-center gap-1 text-xs text-gray-700">
-                    <SkillBadge>{s.skill}</SkillBadge>
-                  </div>
-                  <div className="text-xs font-mono">{s.code}</div>
-                </div>
-              ))}
+        <div className="text-sm text-[var(--color-text)]">
+          <div className="mb-3 space-y-2 mr-4">
+            <div className="flex justify-between">
+              <div className="text-xs text-[var(--color-text-muted)]">Total number of files:</div>
+              <div className="text-xs font-mono"><strong>{visible ? animatedTotals.files : 0}</strong></div>
             </div>
-          </>
-        ) : null}
-      </div>
+            <div className="flex justify-between">
+              <div className="text-xs text-[var(--color-text-muted)]">Total lines of code:</div>
+              <div className="text-xs font-mono"><strong>{visible ? animatedTotals.code : 0}</strong></div>
+            </div>
+          </div>
+          {skills.length ? (
+            <>
+              <div className="my-2 border-t app-border" />
+              <div className="space-y-2 max-h-60 overflow-auto">
+                {skills.map((s) => (
+                  <div key={s.skill} className="flex justify-between gap-3 mr-4">
+                    <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
+                      <SkillBadge>{s.skill}</SkillBadge>
+                    </div>
+                    <div className="text-xs font-mono">{visible ? animatedSkills[s.skill] ?? 0 : 0}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+        </>
+      )}
     </div>
   );
 };

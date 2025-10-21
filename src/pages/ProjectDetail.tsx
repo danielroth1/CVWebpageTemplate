@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import SkillBadge, { SkillBadgeMarkdown } from '../components/SkillBadge';
+import { YouTubeEmbedMarkdown } from '../components/YouTubeEmbed';
 import {
     DownloadButtonMarkdown,
     GithubButtonMarkdown,
@@ -33,6 +34,8 @@ const ProjectDetail: React.FC = () => {
         () =>
             ({
                 skill: SkillBadgeMarkdown,
+                // YouTube embed: <youtube id="VIDEO_ID" start="30" title="Intro" />
+                youtube: YouTubeEmbedMarkdown,
                 // generic button wrapper: <btn kind="github|linkedin|download" href="...">Text</btn>
                 btn: IconButtonMarkdown,
                 // convenience tags
@@ -109,15 +112,17 @@ const ProjectDetail: React.FC = () => {
     }, [clocUrl]);
 
     return (
-        <div className="max-w-6xl mx-auto px-4">
+    <div className="w-full px-4">
             {!project ? (
                 <>
                     <p className="text-red-600">Project not found.</p>
-                    <Link to="/projects" className="text-blue-600 hover:underline">Back to projects</Link>
+                    <Link to="/projects" className="app-link hover:underline">Back to projects</Link>
                 </>
             ) : (
                 <>
-            <h1 className="text-2xl font-bold mb-3">{project.title}</h1>
+            {/* Top-left back navigation */}
+            <Link to="/projects" className="inline-block mb-4 app-link hover:underline">← Back to projects</Link>
+            <h1 className="text-2xl font-bold mb-3 text-[var(--color-text)]">{project.title}</h1>
 
             {skills.length ? (
                 <div className="mb-4 flex flex-wrap gap-2">
@@ -132,8 +137,8 @@ const ProjectDetail: React.FC = () => {
                 // Two-column layout: markdown on the left, LOC summary on the right
                 <div className="max-w-none">
                     <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="prose prose-sm sm:prose lg:prose-lg flex-1">
-                    {loading && <p className="text-gray-500">Loading details…</p>}
+                        <div className="prose prose-sm sm:prose lg:prose-lg flex-1 dark:prose-invert max-w-none markdown-wide">
+                    {loading && <p className="text-[var(--color-text-muted)]">Loading details…</p>}
                     {!loading && md && (
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
@@ -144,34 +149,35 @@ const ProjectDetail: React.FC = () => {
                         </ReactMarkdown>
                     )}
                     {!loading && !md && (
-                        <p className="text-gray-700">{project.description}</p>
+                        <p className="text-[var(--color-text-muted)]">{project.description}</p>
                     )}
                     <div className="mt-4">
                         <a
                             href={getMarkdownAssetUrl(markdownUrl) ?? markdownUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-sm text-blue-600 hover:underline"
+                            className="text-sm app-link hover:underline"
                         >
                             Open source markdown ↗
                         </a>
                     </div>
                         </div>
 
-                        <aside className="w-full lg:w-64 flex-shrink-0">
+                        <aside className="w-full lg:w-64 flex-shrink-0 ">
                             <CodeStats
                                 clocData={cloc}
                                 languageMapping={clocLanguageMapping as Record<string, string>}
                                 overrides={project['cloc-mapping-overwrite']}
+                                defaultCollapsed={false}
                             />
                         </aside>
                     </div>
                 </div>
             ) : (
-                <p className="text-gray-700 mb-4">{project.description}</p>
+                <p className="text-[var(--color-text-muted)] mb-4">{project.description}</p>
             )}
             <div className="mt-6">
-                <Link to="/projects" className="text-blue-600 hover:underline">← Back to projects</Link>
+                <Link to="/projects" className="app-link hover:underline">← Back to projects</Link>
             </div>
                 </>
             )}

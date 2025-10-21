@@ -72,19 +72,16 @@ async function loadResumeJson(): Promise<ResumeJson | null> {
 }
 
 import { formatDuration, getCompanyImageUrl } from '../utils/resume';
+import { DownloadButtonMarkdown, GithubButtonMarkdown, IconButtonMarkdown, LinkedInButtonMarkdown } from './IconButton';
 
 type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
 
 const baseMarkdownComponents = {
   skill: SkillBadgeMarkdown,
-} as unknown as MarkdownComponents;
-
-const inlineMarkdownComponents = {
-  skill: SkillBadgeMarkdown,
-  p: ({ node, ...props }: { node?: unknown }) => <span {...props} />,
-  a: ({ node, className, ...props }: { node?: unknown; className?: string }) => (
-    <a {...props} className={`text-blue-600 hover:underline ${className ?? ''}`} />
-  ),
+  btn: IconButtonMarkdown,
+  github: GithubButtonMarkdown,
+  linkedin: LinkedInButtonMarkdown,
+  download: DownloadButtonMarkdown,
 } as unknown as MarkdownComponents;
 
 const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title, items }) => (
@@ -110,7 +107,7 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
-                    components={inlineMarkdownComponents}
+                    components={baseMarkdownComponents}
                   >
                     {it.position}
                   </ReactMarkdown>
@@ -119,13 +116,13 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
-                    components={inlineMarkdownComponents}
+                    components={baseMarkdownComponents}
                   >
                     {it.company}
                   </ReactMarkdown>
                 </div>
                 {/* Under the company: type · start–end · duration */}
-                <div className="text-sm text-gray-500 mt-0.5">
+                <div className="text-sm mt-0.5 text-gray-500 dark:text-[var(--color-text-muted)]">
                   {it.type ? (
                     <span>
                       {it.type}
@@ -141,13 +138,13 @@ const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title,
               </div>
 
               {it.bullets?.length ? (
-                <ul className="list-disc ml-5 mt-2 text-gray-700">
+                <ul className="list-disc ml-5 mt-2 text-gray-700 dark:text-[var(--color-text)]">
                   {it.bullets.map((b, i) => (
                     <li key={i}>
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw]}
-                        components={inlineMarkdownComponents}
+                        components={baseMarkdownComponents}
                       >
                         {b}
                       </ReactMarkdown>

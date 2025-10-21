@@ -12,14 +12,15 @@ const Projects: React.FC = () => {
         }
     }, []);
     return (
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-none mx-auto">
             <h1 className="text-2xl font-bold mb-4">My Projects</h1>
-            <div className="flex flex-col lg:flex-row gap-6">
-                <div className="flex-1">
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+                <div className="flex-1 min-w-0">
                     <ProjectList projects={(projectsData as any).projects} />
                 </div>
-                <aside className="w-full lg:w-80 flex-shrink-0">
-                    <AllCodeStats />
+                <aside className="flex-shrink-0 lg:self-start">
+                    {/* Collapsed by default; when collapsed it only shows a button so width shrinks naturally */}
+                    <AllCodeStats defaultCollapsed={false} />
                 </aside>
             </div>
         </div>

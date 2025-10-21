@@ -1,6 +1,35 @@
+@import './theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
-a { @apply no-underline text-inherit; }
+body { @apply antialiased; background: var(--color-bg); color: var(--color-text); }
+a { @apply no-underline; color: var(--color-primary); }
+a:hover { color: var(--color-primary-accent); }
+
+@media print {
+	.print-hide { display: none !important; }
+	.print-hero-simplify {
+		position: static !important;
+		height: auto !important;
+		background: #0a3b6e !important;
+		-webkit-print-color-adjust: exact;
+		color: #fff !important;
+	}
+	.print-hero-simplify img { filter: none !important; transform: none !important; }
+	nav { display: none !important; }
+}
+
+/* Ensure markdown-wide containers override prose max-width when used */
+.markdown-wide,
+.prose.markdown-wide {
+	max-width: none !important;
+	width: 100% !important;
+}
+
+/* helper: remove default prose side padding if you want truly edge-to-edge */
+.markdown-wide > * {
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+}

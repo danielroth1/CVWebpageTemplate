@@ -28,6 +28,10 @@ interface CodeStatsProps {
     clocData: ClocData | null;
     languageMapping: Record<string, string>;
     overrides?: Record<string, string>;
+    /** Whether the stats panel should start collapsed */
+    defaultCollapsed?: boolean;
+    /** Optional callback when user toggles collapsed state */
+    onToggleCollapsed?: (collapsed: boolean) => void;
 }
 
 type LabelPart = { type: 'text'; value: string } | { type: 'skill'; value: string };
@@ -74,7 +78,7 @@ function renderLabel(label: string): React.ReactNode {
     });
 }
 
-const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overrides }) => {
+const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overrides, defaultCollapsed = false, onToggleCollapsed }) => {
     const rawTotal = clocData?.summary?.total ?? clocData?.raw?.SUM ?? null;
     const languages = Array.isArray(clocData?.summary?.languages)
         ? clocData?.summary?.languages
@@ -105,53 +109,88 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
         return { filteredLanguages: filtered, adjustedTotal: adjTotal };
     }, [rawTotal, languages]);
 
+    const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
+
+    const toggle = () => {
+        setCollapsed((c) => {
+            const next = !c;
+            onToggleCollapsed?.(next);
+            return next;
+        });
+    };
+
     return (
-        <div className="border border-gray-200 rounded p-4 bg-gray-50">
-            <h3 className="text-sm font-semibold mb-2">Code stats</h3>
-            {clocData ? (
-                <div className="text-sm text-gray-800">
-                    {adjustedTotal ? (
-                        <div className="mb-3 space-y-2">
-                            <div className="flex justify-between">
-                                <div className="text-xs text-gray-700">Files:</div>
-                                <div className="text-xs font-mono">
-                                    <strong>{typeof adjustedTotal.nFiles === 'number' ? adjustedTotal.nFiles : '—'}</strong>
+    <div className={(collapsed ? "" : "app-border border rounded-xl p-4 app-surface") + " lg:sticky lg:top-4"}>
+            {collapsed ? (
+                <button
+                    type="button"
+                    onClick={toggle}
+                    className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+                    aria-expanded={!collapsed}
+                    aria-label="Show code statistics"
+                >
+                    Show Stats
+                </button>
+            ) : (
+                <>
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+                    <button
+                        type="button"
+                        onClick={toggle}
+                        className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+                        aria-expanded={!collapsed}
+                        aria-label="Hide code statistics"
+                    >
+                        Hide
+                    </button>
+                </div>
+                    {clocData ? (
+                        <div className="text-sm text-[var(--color-text)]">
+                            {adjustedTotal ? (
+                                <div className="mb-3 space-y-2">
+                                    <div className="flex justify-between">
+                                        <div className="text-xs text-[var(--color-text-muted)]">Files:</div>
+                                        <div className="text-xs font-mono">
+                                            <strong>{typeof adjustedTotal.nFiles === 'number' ? adjustedTotal.nFiles : '—'}</strong>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <div className="text-xs text-[var(--color-text-muted)]">Total lines of code:</div>
+                                        <div className="text-xs font-mono">
+                                            <strong className="text-xs font-mono">{typeof adjustedTotal.code === 'number' ? adjustedTotal.code : '—'}</strong>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex justify-between">
-                                <div className="text-xs text-gray-700">Total lines of code:</div>
-                                <div className="text-xs font-mono">
-                                    <strong className="text-xs font-mono">{typeof adjustedTotal.code === 'number' ? adjustedTotal.code : '—'}</strong>
-                                </div>
-                            </div>
+                            ) : (
+                                <div className="mb-3">No total summary available</div>
+                            )}
+                            {filteredLanguages && filteredLanguages.length ? (
+                                <>
+                                    <div className="my-2 border-t app-border" />
+                                    <div className="space-y-2 max-h-48 overflow-auto">
+                                        {filteredLanguages.map((entry) => {
+                                            const label = resolveLabel(entry.language);
+                                            return (
+                                                <div
+                                                    key={`${entry.language}-${entry.code}`}
+                                                    className="flex justify-between gap-3"
+                                                >
+                                                    <div className="flex flex-wrap items-center gap-1 text-xs text-[var(--color-text-muted)]">
+                                                        {renderLabel(label)}
+                                                    </div>
+                                                    <div className="text-xs font-mono">{entry.code}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            ) : null}
                         </div>
                     ) : (
-                        <div className="mb-3">No total summary available</div>
+                        <div className="text-sm text-[var(--color-text-muted)]">No LOC data</div>
                     )}
-                    {filteredLanguages && filteredLanguages.length ? (
-                        <>
-                            <div className="my-2 border-t border-gray-200" />
-                            <div className="space-y-2 max-h-48 overflow-auto">
-                                {filteredLanguages.map((entry) => {
-                                    const label = resolveLabel(entry.language);
-                                    return (
-                                        <div
-                                            key={`${entry.language}-${entry.code}`}
-                                            className="flex justify-between gap-3"
-                                        >
-                                            <div className="flex flex-wrap items-center gap-1 text-xs text-gray-700">
-                                                {renderLabel(label)}
-                                            </div>
-                                            <div className="text-xs font-mono">{entry.code}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </>
-                    ) : null}
-                </div>
-            ) : (
-                <div className="text-sm text-gray-600">No LOC data</div>
+                </>
             )}
         </div>
     );
