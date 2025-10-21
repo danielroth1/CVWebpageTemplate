@@ -74,3 +74,13 @@ html.dark .theme-toggle-hero:hover { background: rgba(255,255,255,0.30) !importa
 
 .prose-theme-light.prose { --tw-prose-body: var(--color-text); }
 html.dark .prose-theme-dark.prose { --tw-prose-body: var(--color-text); }
+
+/* Markdown code styling adjustments for dark mode: make inline code less bright */
+html.dark .prose :where(code):not(:where(pre *)) {
+  background-color: rgba(51, 65, 85, 0.35); /* slate-700 @ 35% */
+  color: var(--color-text);
+  border: 1px solid rgba(148, 163, 184, 0.25); /* slate-400 @ 25% */
+  padding: 0 .275rem;
+  border-radius: .35rem;
+  font-weight: 500;
+}
