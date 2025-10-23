@@ -24,7 +24,7 @@ try {
   // Note: two globs - one for raw content, one for asset URLs (if needed later)
   // @ts-ignore
   // Load ALL markdown files under src/data (including projects subfolders)
-  const raw = import.meta.glob('../data/**/*.md', { as: 'raw', eager: true });
+  const raw = import.meta.glob('../data/**/*.md', { query: '?raw', import: 'default', eager: true });
   viteMdModules = raw as Record<string, string>;
 } catch {
   viteMdModules = null;

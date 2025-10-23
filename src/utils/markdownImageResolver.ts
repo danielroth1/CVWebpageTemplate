@@ -1,6 +1,6 @@
 /*
  * Resolve relative image paths referenced from markdown files inside src/data/**
- * into Vite-served URLs using import.meta.glob with `as: 'url'`.
+ * into Vite-served URLs using import.meta.glob with `query: '?url', import: 'default'`.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Create a mapping of all common image assets under src/data to their final URLs.
@@ -8,7 +8,7 @@ const imageModules: Record<string, string> = (() => {
   try {
     // Eagerly load URLs for image assets under data/**
     // @ts-ignore - import.meta.glob is supported by Vite and typed as any here
-    const mods = import.meta.glob('../data/**/*.{png,jpg,jpeg,gif,svg,webp,avif}', { as: 'url', eager: true });
+    const mods = import.meta.glob('../data/**/*.{png,jpg,jpeg,gif,svg,webp,avif}', { query: '?url', import: 'default', eager: true });
     return mods as Record<string, string>;
   } catch (e) {
     // If import.meta.glob isn't available (non-Vite environment), return empty mapping

@@ -143,8 +143,7 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
   const toggle = () => setCollapsed(c => { const next = !c; onToggleCollapsed?.(next); return next; });
 
   return (
-    // Component itself no longer sticky; parent aside handles sticky behavior on large screens
-    <div ref={ref} className={(collapsed ? '' : 'app-border border rounded-xl p-4 app-surface min-w-[14rem] shadow-sm')}>
+  <div ref={ref} className={(collapsed ? '' : 'app-border border rounded-xl p-4 app-surface min-w-[14rem]') + ' lg:sticky lg:top-4'}>
       {collapsed ? (
         <button
           type="button"
@@ -157,8 +156,12 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
         </button>
       ) : (
         <>
-        <div className="flex items-center justify-between mb-2 mr-3">
-          <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+        <div className="flex items-start justify-between mb-2 mr-3">
+          <div className="flex items-center gap-1">
+            <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+            {/* Info icon with tooltip & click details */}
+            <InfoIcon />
+          </div>
           <button
             type="button"
             onClick={toggle}
@@ -183,7 +186,7 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
           {skills.length ? (
             <>
               <div className="my-2 border-t app-border" />
-              <div className="space-y-2 max-h-60 overflow-auto">
+              <div className="space-y-2 overflow-auto">
                 {skills.map((s) => (
                   <div key={s.skill} className="flex justify-between gap-3 mr-4">
                     <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
@@ -203,3 +206,63 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
 };
 
 export default AllCodeStats;
+
+// ---------------------- Info components ----------------------
+// Refactored to use shared <Tooltip /> component.
+import Tooltip from './Tooltip';
+
+/** Inline info icon with tooltip and click popover */
+const InfoIcon: React.FC = () => {
+  const [open, setOpen] = React.useState(false);
+  const toggle = () => setOpen(o => !o);
+
+  return (
+    <div className="relative inline-block">
+      <Tooltip
+        content="See how the code statistics are generated."
+        delay={600}
+        placement="bottom"
+        disabled={open}
+        maxWidthClass="max-w-xl"
+        minWidthClass="min-w-[14rem]"
+      >
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label="More information about code stats"
+          onClick={toggle}
+          className="w-4 h-4 flex items-center justify-center rounded-full border app-border text-[10px] font-bold cursor-pointer select-none bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)]"
+        >
+          i
+        </button>
+  </Tooltip>
+      {open && (
+        <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1 w-64 text-[11px] p-3 rounded border app-border bg-[var(--color-bg)] shadow-xl space-y-2">
+          <p>
+            The code stats have been calculated with{' '}
+            <a
+              href="https://github.com/AlDanial/cloc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+            >
+              cloc
+            </a>
+            . The lines of code represent the actual lines of code of all my Open Source projects (empty spaces and comments are not included). I have written most of that code.
+          </p>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-[10px] px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)]"
+              aria-label="Close code stats info"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+

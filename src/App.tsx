@@ -10,9 +10,10 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col app-bg">
-        <Header />
+        {/* Not really needed because navigation is already possible via side bar */}
+        {/* <Header /> */} 
         <div className="flex flex-1">
-          <aside className="hidden md:block w-64 app-surface border-r app-border">
+          <aside className="hidden md:block w-64 app-surface border-r app-border sticky top-0 h-screen overflow-y-auto">
             <Sidebar />
           </aside>
           <main className="flex-1 p-4 md:p-6">

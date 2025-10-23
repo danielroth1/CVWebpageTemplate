@@ -16,7 +16,7 @@ function toPublicPath(url: string): string | undefined {
 let viteClocModules: Record<string, any> | null = null;
 try {
   // @ts-ignore
-  const raw = import.meta.glob('../data/projects/**/cloc.json', { as: 'json', eager: true });
+  const raw = import.meta.glob('../data/projects/**/cloc.json', { query: '?json', eager: true });
   viteClocModules = raw as Record<string, any>;
 } catch {
   viteClocModules = null;

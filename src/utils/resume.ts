@@ -48,7 +48,7 @@ export function formatDuration(startStr: string, endStr: string): string {
 
 // Vite: import all images under src/data/company_images and return URL strings
 // @ts-ignore - Vite replaces this at build time
-const imageModules = import.meta.glob('../data/company_images/*', { eager: true, as: 'url' }) as Record<string, string>;
+const imageModules = import.meta.glob('../data/company_images/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 
 export function getCompanyImageUrl(fileName?: string): string | undefined {
   if (!fileName) return undefined;

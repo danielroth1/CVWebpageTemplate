@@ -63,7 +63,7 @@ const ProjectFilterBar: React.FC<ProjectFilterBarProps> = ({ active, onChange, c
               <SkillBadge
                 className={`cursor-pointer select-none border-2 transition-all transform-gpu ${
                   selected
-                    ? 'border-primary-700 dark:border-primary-300 bg-primary-700 text-white dark:bg-primary-500 dark:text-white font-bold shadow-lg scale-105 ring-4 ring-primary-400/30 dark:ring-primary-300/30'
+                    ? '!border-primary-600 dark:!border-primary-500 dark:text-white dark:bg-primary-500 dark:text-white font-bold shadow-lg scale-105 ring-4 ring-primary-400/30 dark:ring-primary-300/30'
                     : 'border-slate-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-300 hover:bg-primary-50/60 dark:hover:bg-slate-700'
                 } `}
               >

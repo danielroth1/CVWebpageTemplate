@@ -58,7 +58,7 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
   maxHeight = 420,
   navFadeThreshold = 0.45,
 }) => {
-  const profile = (resume as any).profile as { name: string; title: string; skills: string[] } | undefined;
+  const profile = (resume as any).profile as { name: string; title: string; email?: string; skills: Record<string, string[]> | string[] } | undefined;
   const progress = useScrollProgress(shrinkRange);
   const height = useTransform(progress, [0, 1], [maxHeight, minHeight]);
 
@@ -117,8 +117,8 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
         />
       </motion.div>
 
-  {/* Container: flex column; nav anchored to bottom via mt-auto to remain visible when hero shrinks */}
-  <div className="relative max-w-6xl mx-auto h-full px-6 flex flex-col">
+    {/* Container: flex column; nav anchored to bottom via mt-auto to remain visible when hero shrinks */}
+    <div className="relative max-w-6xl mx-auto h-full px-6 flex flex-col">
         {/* Persistent theme toggle positioned in top-right within hero bounds */}
         <div className="absolute top-4 right-4 z-20">
           <ThemeToggle className="theme-toggle-hero" />
@@ -143,15 +143,29 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
             >
               {profile?.title}
             </motion.p>
+            {profile?.email && (
+              <motion.p
+                style={{ opacity: useTransform(progress, [0, 1], [1, 0.75]) }}
+                className="text-sm mt-1 text-blue-200"
+              >
+                <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
+              </motion.p>
+            )}
             <motion.div
               style={{ opacity: useTransform(progress, [0, 1], [1, 0.4]) }}
               className="mt-4 hidden md:block text-sm text-blue-50 max-w-xl"
             >
-              {(profile?.skills || []).slice(0, 10).join(' • ')}
+              {Array.isArray(profile?.skills)
+                ? (profile?.skills || []).slice(0, 10).join(' \u2022 ')
+                : Object.entries(profile?.skills || {})
+                    .flatMap(([cat, items]) => items.map((s) => s))
+                    .slice(0, 10)
+                    .join(' \u2022 ')}
             </motion.div>
           </div>
         </div>
-        {/* LOC flair removed */}
+      </div>
+      {/* LOC flair removed */}
 
         {/* Navigation that fades in once threshold met and stays visible (anchored bottom) */}
         {/* Commented out, because it's pretty bugged */}
@@ -175,8 +189,6 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
             })}
           </ul>
         </motion.nav> */}
-      </div>
-
       {/* Foreground overlay gradient fade at bottom to smoothly transition into page content */}
       <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.25), transparent)'

@@ -17,7 +17,17 @@ type ResumeJsonEntry = {
   company_image?: string; // file name under src/data/company_images
 };
 
+type ResumeProfile = {
+  name?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  contact?: string;
+  skills?: string[] | Record<string, string[]>;
+};
+
 type ResumeJson = {
+  profile?: ResumeProfile;
   work?: ResumeJsonEntry[];
   education?: ResumeJsonEntry[];
 };
@@ -35,7 +45,7 @@ const RESUME_JSON_PATH = 'data/RESUME.json';
 let resumePdfUrlFromSrc: string | null = null;
 try {
   // @ts-ignore - Vite replaces this at build time; `as: "url"` returns string URLs
-  const pdfMods = import.meta.glob('../data/**/*.pdf', { eager: true, as: 'url' });
+  const pdfMods = import.meta.glob('../data/**/*.pdf', { eager: true, query: '?url', import: 'default' });
   const entries = Object.entries(pdfMods) as Array<[string, string]>;
   const match =
     entries.find(([k]) => k.toLowerCase().endsWith('/resume.pdf')) ||
@@ -242,6 +252,44 @@ const Resume: React.FC<ResumeProps> = ({ showTitle = false, showPdfPreview = fal
       {/* JSON mode */}
       {!loading && !md && json && (
         <div>
+          {/* Profile summary / skills */}
+          {json.profile?.skills && (
+            <section className="mt-2">
+              <h2 className="text-xl font-semibold mb-3">Tech Stack</h2>
+              {Array.isArray(json.profile.skills) ? (
+                <div className="flex flex-wrap gap-2">
+                  {json.profile.skills.map((s) => (
+                    <span
+                      key={s}
+                      className="px-2 py-1 rounded bg-blue-600/10 text-blue-900 dark:text-blue-200 text-xs border border-blue-600/30"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(json.profile.skills).map(([category, items]) => (
+                    <div key={category}>
+                      <h3 className="font-medium text-sm mb-1 text-blue-700 dark:text-blue-300">
+                        {category}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((s) => (
+                          <span
+                            key={category + s}
+                            className="px-2 py-1 rounded bg-blue-600/10 text-blue-900 dark:text-blue-200 text-xs border border-blue-600/30"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
           {json.work?.length ? <Section title="Work" items={json.work} /> : null}
           {json.education?.length ? <Section title="Education" items={json.education} /> : null}
           {!json.work?.length && !json.education?.length && (

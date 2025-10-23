@@ -7,7 +7,6 @@ import resume from '../data/RESUME.json';
 import personal_photo from '../data/personal_photo.jpg';
 import Resume from '../components/Resume';
 import AboutSection from '../components/AboutSection';
-import projectsData from '../data/projects.json'; // still used for counts if needed later
 
 const Home: React.FC = () => {
     // Profile information now lives in RESUME.json
@@ -66,7 +65,7 @@ const Home: React.FC = () => {
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-medium">Skills</h3>
+                            <h3 className="font-medium">Tech Stack</h3>
                             <p className="text-gray-700">{profile?.skills?.join(', ')}</p>
                         </div>
                     </div>
@@ -77,7 +76,7 @@ const Home: React.FC = () => {
                     {/* Projects section tightened with a max-width container */}
                     <div className="max-w-6xl space-y-4">
                         <div className="flex items-center gap-4 flex-wrap">
-                            <h2 className="text-xl font-semibold">Projects</h2>
+                            <h2 className="text-xl font-semibold">My Projects</h2>
                         </div>
                         {/* Project cards grid */}
                         <ProjectList showMaxNumProjects={3} showFilterBar={false} />

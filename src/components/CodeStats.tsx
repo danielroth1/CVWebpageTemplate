@@ -1,5 +1,6 @@
 import React from 'react';
 import SkillBadge from './SkillBadge';
+import Tooltip from './Tooltip';
 
 interface ClocLanguageEntry {
     language: string;
@@ -120,7 +121,7 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
     };
 
     return (
-    <div className={(collapsed ? "" : "app-border border rounded-xl p-4 app-surface") + " lg:sticky lg:top-4"}>
+    <div className={(collapsed ? "" : "app-border border rounded-xl p-4 app-surface min-w-[13rem]") + " lg:sticky lg:top-4"}>
             {collapsed ? (
                 <button
                     type="button"
@@ -133,8 +134,11 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                 </button>
             ) : (
                 <>
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+                <div className="flex items-start justify-between mb-2 mr-3">
+                    <div className="flex items-center gap-1">
+                        <h3 className="text-sm font-semibold text-[var(--color-text)]">Code stats</h3>
+                        <InfoIcon />
+                    </div>
                     <button
                         type="button"
                         onClick={toggle}
@@ -148,7 +152,7 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                     {clocData ? (
                         <div className="text-sm text-[var(--color-text)]">
                             {adjustedTotal ? (
-                                <div className="mb-3 space-y-2">
+                                <div className="mb-3 space-y-2 mr-4">
                                     <div className="flex justify-between">
                                         <div className="text-xs text-[var(--color-text-muted)]">Files:</div>
                                         <div className="text-xs font-mono">
@@ -163,7 +167,7 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                                     </div>
                                 </div>
                             ) : (
-                                <div className="mb-3">No total summary available</div>
+                                <div className="mb-3 mr-4">No total summary available</div>
                             )}
                             {filteredLanguages && filteredLanguages.length ? (
                                 <>
@@ -172,10 +176,7 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                                         {filteredLanguages.map((entry) => {
                                             const label = resolveLabel(entry.language);
                                             return (
-                                                <div
-                                                    key={`${entry.language}-${entry.code}`}
-                                                    className="flex justify-between gap-3"
-                                                >
+                                                <div key={`${entry.language}-${entry.code}`} className="flex justify-between gap-3 mr-4">
                                                     <div className="flex flex-wrap items-center gap-1 text-xs text-[var(--color-text-muted)]">
                                                         {renderLabel(label)}
                                                     </div>
@@ -197,3 +198,58 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
 };
 
 export default CodeStats;
+
+// ---------------------- Info components ----------------------
+// Reusing same InfoIcon tooltip pattern from AllCodeStats.
+const InfoIcon: React.FC = () => {
+    const [open, setOpen] = React.useState(false);
+    const toggle = () => setOpen(o => !o);
+    return (
+        <div className="relative inline-block">
+            <Tooltip
+                content="See how the code statistics are generated."
+                delay={600}
+                placement="bottom"
+                disabled={open}
+                maxWidthClass="max-w-xl"
+                minWidthClass="min-w-[14rem]"
+            >
+                <button
+                    type="button"
+                    aria-expanded={open}
+                    aria-label="More information about code stats"
+                    onClick={toggle}
+                    className="w-4 h-4 flex items-center justify-center rounded-full border app-border text-[10px] font-bold cursor-pointer select-none bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)]"
+                >
+                    i
+                </button>
+            </Tooltip>
+            {open && (
+                <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1 w-64 text-[11px] p-3 rounded border app-border bg-[var(--color-bg)] shadow-xl space-y-2">
+                    <p>
+                        The code stats have been calculated with{' '}
+            <a
+              href="https://github.com/AlDanial/cloc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+            >
+              cloc
+            </a>
+            . The lines of code represent the actual lines of code of this Open Source project (empty spaces and comments are not included). I have written most of that code.
+                    </p>
+                    <div className="flex justify-end">
+                        <button
+                            type="button"
+                            onClick={() => setOpen(false)}
+                            className="text-[10px] px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)]"
+                            aria-label="Close code stats info"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};

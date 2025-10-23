@@ -5,12 +5,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import loadMarkdown from '../utils/markdownLoader';
 import { SkillBadgeMarkdown } from './SkillBadge';
-import {
-  GithubButtonMarkdown,
-  LinkedInButtonMarkdown,
-  DownloadButtonMarkdown,
-  IconButtonMarkdown,
-} from './IconButton';
+import { useMarkdownComponents } from '../utils/markdownComponents';
 
 const ABOUT_PATH = 'data/ABOUT_ME.md';
 
@@ -19,15 +14,7 @@ export type AboutSectionProps = {
   className?: string;
 };
 
-type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
-
-const markdownComponents = {
-  skill: SkillBadgeMarkdown,
-  btn: IconButtonMarkdown,
-  github: GithubButtonMarkdown,
-  linkedin: LinkedInButtonMarkdown,
-  download: DownloadButtonMarkdown,
-} as unknown as MarkdownComponents;
+// markdownComponents must be created within a React component (not at module top level)
 
 function extractHighlights(markdown: string, max = 3): string[] {
   // naive sentence split; prioritize sentences with first-person or strong verbs
@@ -67,6 +54,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ showTitle = false, classNam
     };
   }, []);
 
+  const markdownComponents = useMarkdownComponents(ABOUT_PATH);
   const highlights = md ? extractHighlights(md, 3) : [];
   return (
     <div className={`relative ${className ?? ''}`}>

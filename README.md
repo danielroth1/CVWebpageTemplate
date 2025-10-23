@@ -116,10 +116,30 @@ This project is licensed under the MIT License.
 
 ```
 {
-   "work": [ { "startYear": "2022", "endYear": "2025", "position": "Senior Dev", "company": "Acme", "bullets": ["..."] } ],
+   "profile": {
+      "name": "Jane Doe",
+      "title": "Software Developer",
+      "email": "jane.doe@example.com",
+      "skills": {
+         "Front-End": ["React", "TypeScript"],
+         "Backend": ["C#", "ASP.NET Core"],
+         "Databases": ["MySQL"],
+         "DevOps": ["Git"]
+      }
+   },
+   "work": [ { "startYear": "2022", "endYear": "Today", "position": "Senior Dev", "company": "Acme", "bullets": ["..."] } ],
    "education": [ { "startYear": "2016", "endYear": "2020", "position": "B.Sc.", "company": "State University", "bullets": ["..."] } ]
 }
 ```
+
+- If `profile.skills` is an object, categories will be rendered with headings on the Resume page. If it's a flat array, badges are rendered in a single group.
+- Add `resume.pdf` under `src/data/` to enable download & preview.
+
+### Contact page
+
+- The Contact page at `/contact` loads markdown from `src/data/CONTACT.md`.
+- Create or edit `src/data/CONTACT.md` to customize the introductory text (supports GitHub-flavored markdown).
+- The page still uses `profile.email` from `RESUME.json` for the mailto button; keep that field updated.
 
 - Place a `resume.pdf` in the `public/` folder to enable the Download Resume button and inline PDF preview.
 

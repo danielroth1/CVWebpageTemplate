@@ -7,7 +7,7 @@ try {
   // @ts-ignore - Vite replaces this at build time
   const mods = import.meta.glob('../data/projects/**/preview.{png,jpg,jpeg,gif,webp,svg}', {
     eager: true,
-    as: 'url',
+    query: '?url', import: 'default',
   }) as Record<string, string>;
   previewEntries = Object.entries(mods).map(([key, url]) => {
     const normalizedKey = key.replace(/\\/g, '/');
@@ -29,7 +29,7 @@ try {
   // @ts-ignore - Vite replaces this at build time
   const vmods = import.meta.glob('../data/projects/**/preview.{mp4,webm,ogg}', {
     eager: true,
-    as: 'url',
+    query: '?url', import: 'default',
   }) as Record<string, string>;
   previewVideoEntries = Object.entries(vmods).map(([key, url]) => {
     const normalizedKey = key.replace(/\\/g, '/');

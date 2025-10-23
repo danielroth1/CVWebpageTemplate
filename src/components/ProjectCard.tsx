@@ -3,6 +3,28 @@ import { Link } from 'react-router-dom';
 import type { Project } from '../types';
 import { getProjectPreviewUrl, getProjectPreviewVideoSources, type ProjectPreviewVideoSource } from '../utils/previews';
 import SkillBadge from './SkillBadge';
+import { getAllCloc } from '../utils/clocLoader';
+import Tooltip from './Tooltip';
+
+// Cache computed LOC map globally to avoid recomputation per card re-render.
+let __cachedLocMap: Record<string, number> | null = null;
+function getFolderLocMap(): Record<string, number> {
+    if (__cachedLocMap) return __cachedLocMap;
+    const entries = getAllCloc();
+    const map: Record<string, number> = {};
+    for (const { key, data } of entries) {
+        // Key examples: '../data/projects/CAE/cloc.json'
+        const norm = key.replace(/\\/g, '/');
+        const m = norm.match(/data\/projects\/([^/]+)\//i);
+        const folder = m?.[1];
+        if (!folder) continue;
+        const total = data?.summary?.total ?? data?.raw?.SUM ?? null;
+        const code: number | undefined = total?.code;
+        if (typeof code === 'number') map[folder] = code;
+    }
+    __cachedLocMap = map;
+    return map;
+}
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const preview = React.useMemo(() => getProjectPreviewUrl(project), [project]);
@@ -10,6 +32,17 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const skills = project.skills ?? [];
     const [hovered, setHovered] = React.useState(false);
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
+    const locMap = React.useMemo(() => getFolderLocMap(), []);
+    // Derive folder from markdownUrl to match how ProjectDetail resolves cloc.json
+    // Derive total LOC; if project lacks markdown or cloc file we simply omit the badge (no placeholder shown).
+    const totalLoc = React.useMemo(() => {
+        const md = project.markdownUrl;
+        if (!md) return null;
+        const m = md.match(/src\/data\/projects\/([^/]+)\//i);
+        const folder = m?.[1];
+        if (!folder) return null;
+        return locMap[folder] ?? null;
+    }, [project.markdownUrl, locMap]);
 
     React.useEffect(() => {
         const v = videoRef.current;
@@ -71,6 +104,29 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-3">
                 {project.description}
             </p>
+            {typeof totalLoc === 'number' && totalLoc > 0 && (
+                <div className="mb-2 -mt-1">
+                    {/* Distinct styling from skill badges: square-ish chip, subtle border, monospace emphasis */}
+                    <Tooltip
+                        content={
+                            <span>
+                                Lines of code measured with <a className="underline" href="https://github.com/AlDanial/cloc" target="_blank" rel="noopener noreferrer">cloc</a>. Empty lines & comments excluded.
+                            </span>
+                        }
+                        delay={500}
+                        placement="bottom"
+                        maxWidthClass="max-w-xs"
+                    >
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-md border border-slate-300 dark:border-slate-600 bg-slate-50/70 dark:bg-slate-700/40 text-slate-600 dark:text-slate-300 shadow-sm cursor-help">
+                            <svg aria-hidden="true" viewBox="0 0 16 16" className="w-3 h-3 text-primary-600 dark:text-primary-300">
+                                <path fill="currentColor" d="M2 2.75A.75.75 0 0 1 2.75 2h10.5a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75H2.75a.75.75 0 0 1-.75-.75V2.75Zm1 .75v9.5h9.5V3.5H3Zm2 2.25A.75.75 0 0 1 5.75 5h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 5 5.75Zm0 3A.75.75 0 0 1 5.75 8h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 5 8.75Z" />
+                            </svg>
+                            <span className="uppercase tracking-wide font-semibold">LOC</span>
+                            <span className="font-mono font-medium text-slate-800 dark:text-slate-100">{totalLoc}</span>
+                        </span>
+                    </Tooltip>
+                </div>
+            )}
             {skills.length ? (
                 <div className="mb-3 flex flex-wrap gap-2">
                     {skills.map((skill) => (
