@@ -1,5 +1,6 @@
 import React from 'react';
 import resolveMarkdownImage from './markdownImageResolver';
+import resolveMarkdownVideo from './markdownVideoResolver';
 import { SkillBadgeMarkdown } from '../components/SkillBadge';
 import { YouTubeEmbedMarkdown } from '../components/YouTubeEmbed';
 import {
@@ -20,6 +21,72 @@ export type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components
 
 export function createMarkdownComponents(originPath: string): MarkdownComponents {
 	const components: any = {
+		// <webm src="./clip.webm" max-width="720px" autoplay auto-loop controls>
+		// Embeds a responsive .webm video with optional autoplay/loop and adjustable max width.
+		webm: (props: any) => {
+			const node = props.node as any;
+			const srcAttr = props.src ?? node?.properties?.src;
+			const styleAttr = node?.properties?.style ?? props.style;
+			const widthAttr = props.width ?? node?.properties?.width; // may be numeric or css unit
+			const maxWidthAttr = (props['max-width'] ?? props.maxWidth ?? node?.properties?.['max-width'] ?? node?.properties?.maxWidth) as any;
+			const autoplayAttr = props.autoplay ?? node?.properties?.autoplay;
+			const loopAttr = (props['auto-loop'] ?? props.autoloop ?? props.loop ?? node?.properties?.['auto-loop'] ?? node?.properties?.autoloop ?? node?.properties?.loop) as any;
+			const controlsAttr = props.controls ?? node?.properties?.controls;
+			const resolved = resolveMarkdownVideo(originPath, srcAttr as string | undefined) || srcAttr;
+
+			if (!resolved) {
+				return React.createElement('div', { className: 'not-prose text-red-600 text-sm' }, 'Video source not found');
+			}
+
+			const parseStyle = (s: string | undefined) => {
+				if (!s || typeof s !== 'string') return undefined;
+				return s.split(';').reduce((acc: Record<string, string>, part) => {
+					const [k, v] = part.split(':');
+					if (!k || !v) return acc;
+					const key = k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+					acc[key] = v.trim();
+					return acc;
+				}, {} as Record<string, string>);
+			};
+			const parsedStyle = parseStyle(styleAttr);
+			const normalizeSize = (val: any) => {
+				if (val == null) return undefined;
+				const asNum = Number(val);
+				if (!Number.isNaN(asNum) && String(val).trim() !== '') return `${asNum}px`;
+				return String(val);
+			};
+			const maxWidth = normalizeSize(maxWidthAttr ?? parsedStyle?.maxWidth ?? widthAttr ?? parsedStyle?.width);
+
+			// Determine booleans: presence of attribute (even empty) should enable the feature
+			const hasAttr = (v: any) => v !== undefined && v !== null && v !== false && v !== 'false';
+			const autoplay = hasAttr(autoplayAttr);
+			const loop = hasAttr(loopAttr);
+			// Default to showing controls (with progress bar) unless explicitly set to false
+			const controls = !(controlsAttr === false || controlsAttr === 'false');
+
+			const containerStyle: Record<string, any> = {
+				...(parsedStyle as Record<string, any>),
+				width: '100%',
+				...(maxWidth ? { maxWidth } : {}),
+			};
+
+			// For autoplay to work across browsers, set muted and playsInline
+			const videoProps: Record<string, any> = {
+				src: resolved,
+				controls,
+				loop,
+				autoPlay: autoplay,
+				muted: autoplay ? true : undefined,
+				playsInline: true,
+				className: 'w-full h-auto rounded-md',
+			};
+
+			return React.createElement(
+				'div',
+				{ className: 'not-prose w-full', style: containerStyle },
+				[React.createElement('video', { key: 'v', ...videoProps })],
+			);
+		},
 		skill: SkillBadgeMarkdown,
 		youtube: YouTubeEmbedMarkdown,
 		btn: IconButtonMarkdown,
