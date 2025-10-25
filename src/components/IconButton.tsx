@@ -1,8 +1,8 @@
 import React from 'react';
-import { FaGithub, FaLinkedin, FaWindows, FaApple, FaLinux, FaDownload } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaWindows, FaApple, FaLinux, FaDownload, FaGlobe } from 'react-icons/fa';
 
 type Platform = 'windows' | 'macos' | 'linux';
-type Kind = 'github' | 'linkedin' | 'download';
+type Kind = 'github' | 'linkedin' | 'download' | 'website';
 
 export type IconButtonProps = {
   href?: string;
@@ -27,6 +27,7 @@ function colorClasses(kind?: Kind, platform?: Platform): string {
   // Use brand accent ring with subtle background tint; dark mode handled by CSS variables
   if (kind === 'github') return 'app-border bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-solid)]';
   if (kind === 'linkedin') return 'app-border bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface-solid)]';
+  if (kind === 'website') return 'app-border bg-[var(--color-surface)] text-sky-600 dark:text-sky-300 hover:bg-[var(--color-surface-solid)]';
   if (kind === 'download') {
     switch (platform) {
       case 'windows':
@@ -45,6 +46,7 @@ function colorClasses(kind?: Kind, platform?: Platform): string {
 function pickIcon(kind?: Kind, platform?: Platform): React.ReactNode {
   if (kind === 'github') return <FaGithub aria-hidden />;
   if (kind === 'linkedin') return <FaLinkedin aria-hidden />;
+  if (kind === 'website') return <FaGlobe aria-hidden />;
   if (kind === 'download') {
     switch (platform) {
       case 'windows':
@@ -63,6 +65,7 @@ function pickIcon(kind?: Kind, platform?: Platform): React.ReactNode {
 function defaultLabel(kind?: Kind, platform?: Platform): string {
   if (kind === 'github') return 'GitHub';
   if (kind === 'linkedin') return 'LinkedIn';
+  if (kind === 'website') return 'Website';
   if (kind === 'download') {
     if (platform === 'windows') return 'Download for Windows';
     if (platform === 'macos') return 'Download for macOS';
@@ -158,6 +161,19 @@ export const GithubButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
   <IconButton
     href={props.href}
     kind="github"
+    className={props.className}
+    title={props.title}
+    target={props.target || '_blank'}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
+export const WebsiteButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="website"
     className={props.className}
     title={props.title}
     target={props.target || '_blank'}

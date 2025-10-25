@@ -11,6 +11,7 @@ import {
 	WindowsButtonMarkdown,
 	MacosButtonMarkdown,
 	LinuxButtonMarkdown,
+	WebsiteButtonMarkdown,
 } from '../components/IconButton';
 import { FaEnvelope } from 'react-icons/fa';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -92,6 +93,7 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 		youtube: YouTubeEmbedMarkdown,
 		btn: IconButtonMarkdown,
 		github: GithubButtonMarkdown,
+		website: WebsiteButtonMarkdown,
 		linkedin: LinkedInButtonMarkdown,
 		download: DownloadButtonMarkdown,
 		windows: WindowsButtonMarkdown,
