@@ -3,9 +3,10 @@ import SkillBadge from './SkillBadge';
 import { getAllCloc } from '../utils/clocLoader';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 import projectsData from '../data/projects.json';
+import useWindowSize from '../hooks/useWindowSize';
+import { ClocLanguageEntry, animateNumbers } from '../utils/animate';
 
 // Types that match cloc.json summary shape
-interface ClocLanguageEntry { language: string; code?: number; files?: number; }
 interface ClocSummary { total?: { nFiles?: number; code?: number }; languages?: ClocLanguageEntry[] }
 interface ClocData { summary?: ClocSummary; raw?: { SUM?: { nFiles?: number; code?: number } } }
 
@@ -45,7 +46,7 @@ function resolveLabel(language: string, overrides?: Record<string, string>): str
 
 // We only sum by skills that are explicitly tagged with <skill>..</skill>.
 // Any surrounding text is ignored when summing; only the skill tag determines the category.
-function aggregateAll(): { skills: Array<{ skill: string; code: number }>; totalCode: number; totalFiles: number } {
+function aggregateAll(): { skills: Array<{ language: string; code: number }>; totalCode: number; totalFiles: number } {
   const entries = getAllCloc();
   const folderToOverrides = buildFolderToOverrides();
 
@@ -78,7 +79,7 @@ function aggregateAll(): { skills: Array<{ skill: string; code: number }>; total
   }
 
   const skills = Array.from(perSkill.entries())
-    .map(([skill, code]) => ({ skill, code }))
+    .map(([language, code]) => ({ language, code }))
     .sort((a, b) => b.code - a.code);
 
   return { skills, totalCode, totalFiles };
@@ -95,8 +96,11 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
   const { skills, totalCode, totalFiles } = React.useMemo(() => aggregateAll(), []);
   const ref = React.useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
   const [animatedTotals, setAnimatedTotals] = React.useState({ files: 0, code: 0 });
   const [animatedSkills, setAnimatedSkills] = React.useState<Record<string, number>>({});
+  const { width } = useWindowSize();
+  const isLg = width >= 1024; // match Tailwind's lg breakpoint
 
   // IntersectionObserver triggers first-time animation
   React.useEffect(() => {
@@ -116,43 +120,38 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
 
   // Run count-up when visible first time
   React.useEffect(() => {
-    if (!visible) return;
-    const duration = 2000; // ms full duration for largest number
-    const start = performance.now();
-    const skillTargets = skills.reduce((acc, s) => { acc[s.skill] = s.code; return acc; }, {} as Record<string, number>);
-    const maxValue = Math.max(totalFiles || 0, totalCode || 0, ...skills.map(s => s.code));
-    function tick(now: number) {
-      const elapsed = now - start;
-      const baseProgress = Math.min(1, elapsed / duration); // 0->1 over full duration
-      // Each value uses a linear mapping so smaller values finish earlier (they reach target once fraction >= value/maxValue)
-      const totalFilesValue = Math.round(Math.min(1, baseProgress * (maxValue / (totalFiles || 1))) * (totalFiles || 0));
-      const totalCodeValue = Math.round(Math.min(1, baseProgress * (maxValue / (totalCode || 1))) * (totalCode || 0));
-      setAnimatedTotals({ files: totalFilesValue, code: totalCodeValue });
-      const perSkillEntries = Object.entries(skillTargets).map(([k, v]) => {
-        const scaled = Math.round(Math.min(1, baseProgress * (maxValue / (v || 1))) * v);
-        return [k, scaled];
-      });
-      setAnimatedSkills(Object.fromEntries(perSkillEntries));
-      if (baseProgress < 1) requestAnimationFrame(tick);
-    }
-    const r = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(r);
-  }, [visible, skills, totalCode, totalFiles]);
+    if (!visible || collapsed) return;
+    animateNumbers(skills, totalFiles || 0, totalCode || 0, setAnimatedTotals, setAnimatedSkills);
+  }, [visible, skills, totalCode, totalFiles, collapsed]);
 
-  const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
   const toggle = () => setCollapsed(c => { const next = !c; onToggleCollapsed?.(next); return next; });
 
   return (
-  <div ref={ref} className={(collapsed ? '' : 'app-border border rounded-xl p-4 app-surface min-w-[14rem]') + ' lg:sticky lg:top-4'}>
+  <div ref={ref} className={(collapsed ? '' : 'app-border border rounded-xl p-4 app-surface min-w-[14rem]')}>
       {collapsed ? (
         <button
           type="button"
           onClick={toggle}
-          className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+          className="btn-base btn-brand text-sm px-3 py-2 rounded-md transition shadow hover:shadow-md"
           aria-expanded={!collapsed}
           aria-label="Show all projects code statistics"
         >
-          Show Stats
+          <span className="inline-flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-4 h-4"
+              aria-hidden="true"
+            >
+              <path d="M8 16l-4-4 4-4" />
+              <path d="M16 8l4 4-4 4" />
+              <path d="M14 4l-4 16" />
+            </svg>
+            <span>{isLg ? 'Show' : 'Show code stats'}</span>
+          </span>
         </button>
       ) : (
         <>
@@ -165,7 +164,7 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
           <button
             type="button"
             onClick={toggle}
-            className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+            className="text-xs ms-1 px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
             aria-expanded={!collapsed}
             aria-label="Hide all projects code statistics"
           >
@@ -188,11 +187,11 @@ const AllCodeStats: React.FC<AllCodeStatsProps> = ({ defaultCollapsed = false, o
               <div className="my-2 border-t app-border" />
               <div className="space-y-2 overflow-auto">
                 {skills.map((s) => (
-                  <div key={s.skill} className="flex justify-between gap-3 mr-4">
+                  <div key={s.language} className="flex justify-between gap-3 mr-4">
                     <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
-                      <SkillBadge>{s.skill}</SkillBadge>
+                      <SkillBadge>{s.language}</SkillBadge>
                     </div>
-                    <div className="text-xs font-mono">{visible ? animatedSkills[s.skill] ?? 0 : 0}</div>
+                    <div className="text-xs font-mono">{visible ? animatedSkills[s.language] ?? 0 : 0}</div>
                   </div>
                 ))}
               </div>
@@ -248,7 +247,7 @@ const InfoIcon: React.FC = () => {
             >
               cloc
             </a>
-            . The lines of code represent the actual lines of code of all my Open Source projects (empty spaces and comments are not included). I have written most of that code.
+            . The lines of code represent the actual lines of code of all listed projects (empty spaces and comments are not included). I have written most of that code.
           </p>
           <div className="flex justify-end">
             <button

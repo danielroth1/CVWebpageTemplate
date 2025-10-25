@@ -10,6 +10,7 @@ import SkillBadge from '../components/SkillBadge';
 import { useMarkdownComponents } from '../utils/markdownComponents';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
+import useWindowSize from '../hooks/useWindowSize';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -72,8 +73,12 @@ const ProjectDetail: React.FC = () => {
 
     const markdownComponents = useMarkdownComponents(markdownUrl || '');
 
+    // Match AllCodeStats behavior: collapsed on small screens, expanded on lg
+    const { width } = useWindowSize();
+    const isLg = width >= 1024;
+
     return (
-    <div className="w-full px-4">
+        <div className="p-4 lg:px-8 pb-2 mt-6 max-w-6xl content-center mx-auto">
             {!project ? (
                 <>
                     <p className="text-red-600">Project not found.</p>
@@ -81,55 +86,55 @@ const ProjectDetail: React.FC = () => {
                 </>
             ) : (
                 <>
-            {/* Top-left back navigation */}
-            <Link to="/projects" className="inline-block mb-4 app-link hover:underline">← Back to projects</Link>
-            <h1 className="text-2xl font-bold mb-3 text-[var(--color-text)]">{project.title}</h1>
+                    {/* Top-left back navigation */}
+                    <Link to="/projects" className="inline-block mb-4 app-link hover:underline">← Back to projects</Link>
+                    <h1 className="text-2xl font-bold mb-3 text-[var(--color-text)]">{project.title}</h1>
 
-            {skills.length ? (
-                <div className="mb-4 flex flex-wrap gap-2">
-                    {skills.map((skill) => (
-                        <SkillBadge key={skill}>{skill}</SkillBadge>
-                    ))}
-                </div>
-            ) : null}
-
-            {/* Fallback to plain description while markdown loads or if none provided */}
-            {markdownUrl ? (
-                // Two-column layout: markdown on the left, LOC summary on the right
-                <div className="max-w-none">
-                    <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="prose prose-sm sm:prose lg:prose-lg flex-1 dark:prose-invert max-w-none markdown-wide">
-                    {loading && <p className="text-[var(--color-text-muted)]">Loading details…</p>}
-                    {!loading && md && (
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw]}
-                            components={markdownComponents}
-                        >
-                            {md}
-                        </ReactMarkdown>
-                    )}
-                    {!loading && !md && (
-                        <p className="text-[var(--color-text-muted)]">{project.description}</p>
-                    )}
+                    {skills.length ? (
+                        <div className="mb-4 flex flex-wrap gap-2">
+                            {skills.map((skill) => (
+                                <SkillBadge key={skill}>{skill}</SkillBadge>
+                            ))}
                         </div>
+                    ) : null}
 
-                        <aside className="w-full lg:w-64 flex-shrink-0 ">
-                            <CodeStats
-                                clocData={cloc}
-                                languageMapping={clocLanguageMapping as Record<string, string>}
-                                overrides={project['cloc-mapping-overwrite']}
-                                defaultCollapsed={false}
-                            />
-                        </aside>
+                    {/* Fallback to plain description while markdown loads or if none provided */}
+                    {markdownUrl ? (
+                        // Two-column layout on large screens; on small, CodeStats appears first below the title
+                        <div className="" >
+                            <div className="flex flex-col lg:flex-row items-center gap-6">
+                                <aside className="order-1 lg:order-2 flex justify-center lg:justify-start flex-shrink-0 lg:self-start lg:sticky lg:top-4">
+                                    <CodeStats
+                                        clocData={cloc}
+                                        languageMapping={clocLanguageMapping as Record<string, string>}
+                                        overrides={project['cloc-mapping-overwrite']}
+                                        defaultCollapsed={!isLg}
+                                    />
+                                </aside>
+
+                                <div className="order-2 lg:order-1 prose prose-sm sm:prose lg:prose-lg flex-1 dark:prose-invert markdown-wide">
+                                    {loading && <p className="text-[var(--color-text-muted)]">Loading details…</p>}
+                                    {!loading && md && (
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw]}
+                                            components={markdownComponents}
+                                        >
+                                            {md}
+                                        </ReactMarkdown>
+                                    )}
+                                    {!loading && !md && (
+                                        <p className="text-[var(--color-text-muted)]">{project.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-[var(--color-text-muted)] mb-4">{project.description}</p>
+                    )}
+                    <div className="mt-6">
+                        <Link to="/projects" className="app-link hover:underline">← Back to projects</Link>
                     </div>
-                </div>
-            ) : (
-                <p className="text-[var(--color-text-muted)] mb-4">{project.description}</p>
-            )}
-            <div className="mt-6">
-                <Link to="/projects" className="app-link hover:underline">← Back to projects</Link>
-            </div>
                 </>
             )}
         </div>

@@ -95,11 +95,11 @@ const baseMarkdownComponents = {
 } as unknown as MarkdownComponents;
 
 const Section: React.FC<{ title: string; items: ResumeJsonEntry[] }> = ({ title, items }) => (
-  <section className="mt-6">
+  <section className="mt-4">
     <h2 className="text-xl font-semibold mb-3">{title}</h2>
     <ul className="space-y-4">
       {items.map((it, idx) => (
-        <li key={`${title}-${it.company}-${idx}`} className="border-l-2 border-gray-300 pl-3">
+        <li key={`${title}-${it.company}-${idx}`} className="">
           <div className="flex items-start gap-3">
             {/* Company image, fixed width, uniform scaling */}
             {it.company_image ? (
@@ -254,7 +254,7 @@ const Resume: React.FC<ResumeProps> = ({ showTitle = false, showPdfPreview = fal
         <div>
           {/* Profile summary / skills */}
           {json.profile?.skills && (
-            <section className="mt-2">
+            <section className="mt-2 mb-6">
               <h2 className="text-xl font-semibold mb-3">Tech Stack</h2>
               {Array.isArray(json.profile.skills) ? (
                 <div className="flex flex-wrap gap-2">

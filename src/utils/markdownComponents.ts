@@ -79,10 +79,11 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 			const hasExplicitSize = !!(explicitWidth || explicitHeight);
 			const style: Record<string, any> = {
 				...(parsedStyle as Record<string, any>),
-				...(explicitWidth ? { width: explicitWidth } : {}),
-				...(explicitHeight ? { height: explicitHeight } : {}),
+				...(hasExplicitSize ? { width: '100%' } : {}),
+				...(explicitWidth ? { maxWidth: explicitWidth } : {}),
+				...(explicitHeight ? { maxHeight: explicitHeight } : {}),
 			};
-			const className = hasExplicitSize ? 'h-auto rounded-md' : 'max-w-full h-auto rounded-md';
+			const className = hasExplicitSize ? 'w-full h-auto rounded-md' : 'max-w-full h-auto rounded-md';
 			return React.createElement('img', { src: resolved, alt: alt as string | undefined, className, style });
 		},
 	};

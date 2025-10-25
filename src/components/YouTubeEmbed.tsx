@@ -82,10 +82,11 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = (props) => {
   if (props.width !== undefined) {
     const raw = props.width;
     if (typeof raw === 'number') {
-      widthStyle = { width: `${raw}px` };
+      // Ensure responsive shrink: width 100% with a maxWidth cap
+      widthStyle = { width: '100%', maxWidth: `${raw}px` };
     } else if (typeof raw === 'string') {
       if (raw === 'full') widthStyle = { width: '100%' };
-      else widthStyle = { width: raw };
+      else widthStyle = { width: '100%', maxWidth: raw };
     }
   }
 
@@ -94,7 +95,7 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = (props) => {
   return (
     <>
       <figure
-        className={`my-4 ${props.width === undefined ? 'w-full' : ''} ${aspectToClass(props.aspect)} overflow-hidden rounded-lg shadow-md bg-black ${props.className || ''}`}
+        className={`my-4 w-full ${aspectToClass(props.aspect)} overflow-hidden rounded-lg shadow-md bg-black ${props.className || ''}`}
         style={widthStyle}
       >
         <iframe

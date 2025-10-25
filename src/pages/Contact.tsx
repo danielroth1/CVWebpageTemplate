@@ -23,7 +23,7 @@ const ContactPage: React.FC = () => {
   const markdownComponents = useMarkdownComponents(CONTACT_MD_PATH);
 
   return (
-    <div className="px-4 max-w-2xl">
+    <div className="p-4 lg:p-8 max-w-2xl content-center mx-auto">
       <h1 className="text-2xl mb-4 font-bold inline-flex items-center gap-2 text-[var(--color-text)] dark:text-[var(--color-text)]">
         <FaEnvelopeOpenText /> Contact
       </h1>

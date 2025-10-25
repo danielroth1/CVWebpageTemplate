@@ -32,6 +32,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const skills = project.skills ?? [];
     const [hovered, setHovered] = React.useState(false);
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
+    const cardRef = React.useRef<HTMLAnchorElement | null>(null);
     const locMap = React.useMemo(() => getFolderLocMap(), []);
     // Derive folder from markdownUrl to match how ProjectDetail resolves cloc.json
     // Derive total LOC; if project lacks markdown or cloc file we simply omit the badge (no placeholder shown).
@@ -55,6 +56,45 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             try { v.currentTime = 0; } catch {}
         }
     }, [hovered]);
+
+    // When hovered via pointer, keep playing even if the pointer leaves the window.
+    // Desktop: stop when the pointer enters another area (pointerover onto an element outside this card).
+    // Mobile (touch): ignore pointerover/leave during scroll; stop only when user starts a new touch outside the card.
+    React.useEffect(() => {
+        if (!hovered) return;
+        const el = cardRef.current;
+        if (!el) return;
+        const onDocPointerOver = (ev: PointerEvent) => {
+            // Only consider mouse/pen for hover transitions; ignore touch to prevent stopping during scroll.
+            if (ev.pointerType !== 'mouse' && ev.pointerType !== 'pen') return;
+            const target = ev.target as Node | null;
+            if (!target) return;
+            if (el.contains(target)) return; // still inside the card; ignore
+            setHovered(false);
+        };
+        document.addEventListener('pointerover', onDocPointerOver, true);
+        return () => {
+            document.removeEventListener('pointerover', onDocPointerOver, true);
+        };
+    }, [hovered]);
+
+    // Touch-specific outside detection: stop preview when user starts a NEW touch outside the card.
+    React.useEffect(() => {
+        if (!hovered) return;
+        const el = cardRef.current;
+        if (!el) return;
+        const onTouchStart = (ev: TouchEvent) => {
+            const target = ev.target as Node | null;
+            if (target && !el.contains(target)) {
+                setHovered(false);
+            }
+        };
+        document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+        return () => {
+            // Remove with same capture flag
+            document.removeEventListener('touchstart', onTouchStart, true);
+        };
+    }, [hovered]);
     return (
         // Make entire card clickable via Link for better discoverability.
         // NOTE: Avoid nesting another <Link> inside; replace the inline "View Project" link with a styled span.
@@ -62,8 +102,19 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             to={project.link}
             className="group block rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 backdrop-blur p-4 shadow-elevate-sm hover:shadow-elevate-md transition-all duration-300 focus-visible:shadow-elevate-md relative cursor-pointer focus:outline-none focus-visible:ring focus-visible:ring-primary-500"
             aria-label={`View project: ${project.title}`}
+            ref={cardRef}
             onPointerEnter={() => setHovered(true)}
-            onPointerLeave={() => setHovered(false)}
+            onPointerDown={() => setHovered(true)}
+            onPointerLeave={(e) => {
+                // For touch, ignore leave to avoid stopping when starting a scroll gesture.
+                if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+                    // If relatedTarget is null, the pointer likely left the document/window.
+                    // Keep playing in that case; we'll stop when it next enters another area.
+                    const rt = (e as React.PointerEvent<HTMLAnchorElement>).relatedTarget as Node | null;
+                    if (rt == null) return;
+                    setHovered(false);
+                }
+            }}
             onFocus={() => setHovered(true)}
             onBlur={() => setHovered(false)}
         >
@@ -136,8 +187,8 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                     ))}
                 </div>
             ) : null}
-                                    {/* Removed explicit "View Project" call to action; entire card is now clickable */}
-                </Link>
+                            {/* Removed explicit "View Project" call to action; entire card is now clickable */}
+        </Link>
     );
 };
 

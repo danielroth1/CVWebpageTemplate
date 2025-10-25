@@ -1,11 +1,8 @@
 import React from 'react';
 import SkillBadge from './SkillBadge';
 import Tooltip from './Tooltip';
-
-interface ClocLanguageEntry {
-    language: string;
-    code: number;
-}
+import useWindowSize from '../hooks/useWindowSize';
+import { ClocLanguageEntry, animateNumbers } from '../utils/animate';
 
 interface ClocSummary {
     total?: {
@@ -110,7 +107,22 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
         return { filteredLanguages: filtered, adjustedTotal: adjTotal };
     }, [rawTotal, languages]);
 
+    const [animatedTotals, setAnimatedTotals] = React.useState({ files: 0, code: 0 });
+    const [animatedSkills, setAnimatedSkills] = React.useState<Record<string, number>>({});
     const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
+
+    // Run count-up when visible first time
+    React.useEffect(() => {
+      if (collapsed) return;
+      const totalFiles = adjustedTotal?.nFiles;
+      const totalCode = adjustedTotal?.code;
+      const skills = filteredLanguages || [];
+      animateNumbers(skills, totalFiles || 0, totalCode || 0, setAnimatedTotals, setAnimatedSkills);
+    }, [adjustedTotal, filteredLanguages, collapsed]);
+
+    // Screen size (match Tailwind's lg)
+    const { width } = useWindowSize();
+    const isLg = width >= 1024;
 
     const toggle = () => {
         setCollapsed((c) => {
@@ -121,17 +133,34 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
     };
 
     return (
-    <div className={(collapsed ? "" : "app-border border rounded-xl p-4 app-surface min-w-[13rem]") + " lg:sticky lg:top-4"}>
+    <div className={(collapsed ? "" : "app-border border rounded-xl p-4 app-surface min-w-[13rem]")}>
             {collapsed ? (
-                <button
-                    type="button"
-                    onClick={toggle}
-                    className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
-                    aria-expanded={!collapsed}
-                    aria-label="Show code statistics"
-                >
-                    Show Stats
-                </button>
+                <div className="w-full flex justify-center">
+                    <button
+                        type="button"
+                        onClick={toggle}
+                        className="btn-base btn-brand text-sm px-3 py-2 rounded-md transition shadow hover:shadow-md"
+                        aria-expanded={!collapsed}
+                    >
+                        <span className="inline-flex items-center gap-2">
+                            {/* code icon */}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="w-4 h-4"
+                                aria-hidden="true"
+                            >
+                                <path d="M8 16l-4-4 4-4" />
+                                <path d="M16 8l4 4-4 4" />
+                                <path d="M14 4l-4 16" />
+                            </svg>
+                            <span>{isLg ? 'Show' : 'Show code stats'}</span>
+                        </span>
+                    </button>
+                </div>
             ) : (
                 <>
                 <div className="flex items-start justify-between mb-2 mr-3">
@@ -142,9 +171,8 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                     <button
                         type="button"
                         onClick={toggle}
-                        className="text-xs px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
+                        className="text-xs ms-1 px-2 py-1 rounded border app-border hover:bg-[var(--color-bg-muted)] transition"
                         aria-expanded={!collapsed}
-                        aria-label="Hide code statistics"
                     >
                         Hide
                     </button>
@@ -169,18 +197,18 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                             ) : (
                                 <div className="mb-3 mr-4">No total summary available</div>
                             )}
-                            {filteredLanguages && filteredLanguages.length ? (
+                            {animatedSkills && Object.keys(animatedSkills).length ? (
                                 <>
                                     <div className="my-2 border-t app-border" />
                                     <div className="space-y-2 max-h-48 overflow-auto">
-                                        {filteredLanguages.map((entry) => {
-                                            const label = resolveLabel(entry.language);
+                                        {Object.entries(animatedSkills).map(([language, code]) => {
+                                            const label = resolveLabel(language);
                                             return (
-                                                <div key={`${entry.language}-${entry.code}`} className="flex justify-between gap-3 mr-4">
+                                                <div key={`${language}-${code}`} className="flex justify-between gap-3 mr-4">
                                                     <div className="flex flex-wrap items-center gap-1 text-xs text-[var(--color-text-muted)]">
                                                         {renderLabel(label)}
                                                     </div>
-                                                    <div className="text-xs font-mono">{entry.code}</div>
+                                                    <div className="text-xs font-mono">{code}</div>
                                                 </div>
                                             );
                                         })}
@@ -236,7 +264,7 @@ const InfoIcon: React.FC = () => {
             >
               cloc
             </a>
-            . The lines of code represent the actual lines of code of this Open Source project (empty spaces and comments are not included). I have written most of that code.
+            . The lines of code represent the actual lines of code of this project (empty spaces and comments are not included). I have written most of that code.
                     </p>
                     <div className="flex justify-end">
                         <button

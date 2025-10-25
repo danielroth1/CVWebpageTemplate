@@ -6,15 +6,25 @@ import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Resume from './pages/Resume';
 import Contact from './pages/Contact';
+import AppLayout from './layouts/AppLayout';
+import HomeLayout from './layouts/HomeLayout';
 
 const AppRoutes: React.FC = () => (
     <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/resume" element={<Resume />} />
-    <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:id" element={<ProjectDetail />} />
-    <Route path="/contact" element={<Contact />} />
+        {/* Home has a special layout to render HeroHeader above BottomNav */}
+        <Route path="/" element={<HomeLayout />}> 
+            <Route index element={<Home />} />
+        </Route>
+        {/* Root layout renders BottomNav once for all pages */}
+        <Route element={<AppLayout />}> 
+            
+            {/* Other pages use the root layout directly */}
+            <Route path="/about" element={<About />} />
+            <Route path="/resume" element={<Resume />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route path="/contact" element={<Contact />} />
+        </Route>
     </Routes>
 );
 

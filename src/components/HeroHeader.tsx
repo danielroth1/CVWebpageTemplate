@@ -54,21 +54,56 @@ function useScrollProgress(range: number) {
 
 const HeroHeader: React.FC<HeroHeaderProps> = ({
   shrinkRange = 320,
-  minHeight = 120,
+  minHeight = 220,
   maxHeight = 420,
   navFadeThreshold = 0.45,
 }) => {
   const profile = (resume as any).profile as { name: string; title: string; email?: string; skills: Record<string, string[]> | string[] } | undefined;
   const progress = useScrollProgress(shrinkRange);
-  const height = useTransform(progress, [0, 1], [maxHeight, minHeight]);
+
+  // Measure the actual content height so we can ensure the hero never
+  // collapses smaller than the content. We add a small offset for breathing room.
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [measuredContentHeight, setMeasuredContentHeight] = React.useState<number>(0);
+  const offsetPx = 24; // small offset added to content height
+
+  React.useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    // Use ResizeObserver so responsive layout changes update the measurement.
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setMeasuredContentHeight(Math.ceil(entry.contentRect.height));
+      }
+    });
+    ro.observe(el);
+    // initial measure
+    setMeasuredContentHeight(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  const effectiveMin = Math.max(minHeight, measuredContentHeight + offsetPx);
+
+  // Drive a MotionValue for height so we can recompute mapping when effectiveMin changes.
+  const heightMV = useMotionValue(maxHeight);
+  React.useEffect(() => {
+    // Subscribe to progress (0..1) and update height accordingly.
+    const unsubscribe = progress.onChange((p) => {
+      const val = maxHeight + (effectiveMin - maxHeight) * p;
+      heightMV.set(val);
+    });
+    // initialize
+    heightMV.set(maxHeight + (effectiveMin - maxHeight) * progress.get());
+    return unsubscribe;
+  }, [progress, maxHeight, effectiveMin, heightMV]);
 
   // Derived transforms using framer-motion
-  const scaleImg = useTransform(height, [minHeight, maxHeight], [0.4, 1]);
-  const scaleText = useTransform(height, [minHeight, maxHeight], [0.75, 1]);
-  const yParallaxBg = useTransform(height, [minHeight, maxHeight], [0, -40]); // subtle upward
+  const scaleImg = useTransform(heightMV, [effectiveMin, maxHeight], [0.4, 1]);
+  const scaleText = useTransform(heightMV, [effectiveMin, maxHeight], [0.75, 1]);
+  const yParallaxBg = useTransform(heightMV, [effectiveMin, maxHeight], [0, -40]); // subtle upward
 
   // We'll also drive gradient color shift via progress
-  const gradient = useTransform(height, (h: number) => {
+  const gradient = useTransform(heightMV, (h: number) => {
     const t = 1 - (h - minHeight) / (maxHeight - minHeight); // 0 at top -> 1 shrunk
     // Interpolate colors
     const startColor = { r: 5, g: 20, b: 60 };
@@ -83,7 +118,7 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
   const navOpacity = useTransform(progress, [navFadeThreshold, 1], [0, 1]);
   const navY = useTransform(progress, [navFadeThreshold, 1], [20, 0]);
 
-  const containerStyle = { height, backgroundImage: gradient };
+  const containerStyle = { height: heightMV, backgroundImage: gradient };
   // Remove overflow-hidden so content (nav) isn't clipped as height shrinks
   const baseClass = 'relative w-full text-white';
   return (
@@ -95,7 +130,7 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
       <motion.div
         aria-hidden
         style={{ y: yParallaxBg }}
-        className="absolute inset-0"
+        className="absolute inset-0 "
       >
         <div
           className="w-full h-full"
@@ -117,36 +152,36 @@ const HeroHeader: React.FC<HeroHeaderProps> = ({
         />
       </motion.div>
 
-    {/* Container: flex column; nav anchored to bottom via mt-auto to remain visible when hero shrinks */}
-    <div className="relative max-w-6xl mx-auto h-full px-6 flex flex-col">
+      {/* Container: flex column; nav anchored to bottom via mt-auto to remain visible when hero shrinks */}
+      <div className="relative max-w-6xl mx-auto h-full px-6 flex flex-col">
         {/* Persistent theme toggle positioned in top-right within hero bounds */}
         <div className="absolute top-4 right-4 z-20">
           <ThemeToggle className="theme-toggle-hero" />
         </div>
-  <div className="flex items-center gap-6 pt-4">
+        <div className="flex flex-col md:flex-row items-center md:items-center gap-4 md:gap-6 pt-4">
           <motion.img
             src={personal_photo}
             alt={`${profile?.name ?? 'Profile'} photo`}
             style={{ scale: scaleImg }}
-            className="rounded-full object-cover shadow-xl w-40 h-40 md:w-48 md:h-48"
+            className="rounded-full object-cover shadow-xl w-28 h-28 sm:w-32 sm:h-32 md:w-48 md:h-48"
           />
-          <div className="flex-1">
+          <div className="flex-1 mt-3 md:mt-0 w-full md:w-auto">
             <motion.h1
               style={{ scale: scaleText }}
-              className="font-bold tracking-tight"
+              className="font-bold tracking-tight text-center md:text-left"
             >
               <span className="block text-4xl md:text-5xl">{profile?.name}</span>
             </motion.h1>
             <motion.p
               style={{ opacity: useTransform(progress, [0, 1], [1, 0.75]) }}
-              className="mt-2 text-lg text-blue-100"
+              className="mt-2 text-lg text-blue-100 text-center md:text-left"
             >
               {profile?.title}
             </motion.p>
             {profile?.email && (
               <motion.p
                 style={{ opacity: useTransform(progress, [0, 1], [1, 0.75]) }}
-                className="text-sm mt-1 text-blue-200"
+                className="text-sm mt-1 text-blue-200 text-center md:text-left"
               >
                 <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
               </motion.p>

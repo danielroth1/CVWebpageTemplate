@@ -1,6 +1,5 @@
 import React from 'react';
-import { /* Link */ } from 'react-router-dom';
-import HeroHeader from '../components/HeroHeader';
+import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
 import AllCodeStats from '../components/AllCodeStats';
 import resume from '../data/RESUME.json';
@@ -17,23 +16,20 @@ const Home: React.FC = () => {
     // Project filters now handled internally by ProjectList; no local state needed
     return (
         <div className="mx-auto">
-            <HeroHeader />
             {/* Overview toggle removed for streamlined UI */}
             <>
             {/* Show About markdown at the beginning of the overview */}
-            <section className="px-14 pb-10 mt-4">
-                <div className="mb-6">
-                    <AboutSection showTitle={false} />
-                </div>
+            <section className="px-4 lg:px-8 pb-2 mt-6 max-w-6xl content-center mx-auto">
+                <AboutSection showTitle={false} />
             </section>
             {showFullResume && (
-                <section className="px-4 pb-10">
+                <section className="px-4 lg:px-8 pb-2 mt-6 max-w-6xl content-center mx-auto">
                     {/* Render full Resume without title and without PDF preview on Home */}
                     <Resume showTitle={false} showPdfPreview={false} />
                 </section>
             )}
             {!showFullResume && (
-                <section className="px-4 pb-8">
+                <section className="px-4 lg:px-8 pb-6 mt-6 max-w-6xl content-center mx-auto">
                     <h2 className="text-xl font-semibold mb-2">Overview</h2>
                     <div className="grid md:grid-cols-3 gap-4 text-sm">
                         <div>
@@ -72,11 +68,17 @@ const Home: React.FC = () => {
                 </section>
             )}
 
-                <section className="px-4 pb-10">
+                <section className="px-4 lg:px-8 pb-2 mt-10 mt-4 max-w-6xl content-center mx-auto">
                     {/* Projects section tightened with a max-width container */}
                     <div className="max-w-6xl space-y-4">
                         <div className="flex items-center gap-4 flex-wrap">
                             <h2 className="text-xl font-semibold">My Projects</h2>
+                            <Link
+                                to="/projects"
+                                className="ml-auto text-sm text-[var(--color-text)] opacity-80 hover:opacity-100 underline underline-offset-4"
+                            >
+                                Explore all projects →
+                            </Link>
                         </div>
                         {/* Project cards grid */}
                         <ProjectList showMaxNumProjects={3} showFilterBar={false} />
