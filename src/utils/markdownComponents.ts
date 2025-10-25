@@ -16,6 +16,7 @@ import { FaEnvelope } from 'react-icons/fa';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import resumeData from '../data/RESUME.json';
 import ReactMarkdown from 'react-markdown';
+import { HighlightMarkdown } from './Highlight';
 
 export type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components'];
 
@@ -96,6 +97,8 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 		windows: WindowsButtonMarkdown,
 		macos: MacosButtonMarkdown,
 		linux: LinuxButtonMarkdown,
+		// <highlight title="Optional" shadow>Content</highlight>
+		highlight: HighlightMarkdown,
 		// <email href="custom@domain.com">Label</email>
 		email: (props: any) => {
 			const profileEmail: string | undefined = (resumeData as any)?.profile?.email;
