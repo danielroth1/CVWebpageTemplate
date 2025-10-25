@@ -17,6 +17,16 @@ const ProjectDetail: React.FC = () => {
     const project = projectsData.projects.find((p) => p.id === id);
     const skills = project?.skills ?? [];
 
+    // Determine next/previous projects based on the ordering in projects.json
+    const { prevProject, nextProject } = React.useMemo(() => {
+        if (!project) return { prevProject: null as any, nextProject: null as any };
+        const list = projectsData.projects;
+        const idx = list.findIndex((p) => p.id === project.id);
+        const prev = idx > 0 ? list[idx - 1] : null;
+        const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
+        return { prevProject: prev, nextProject: next };
+    }, [project]);
+
     // Shared markdown components mapping
 
     const [md, setMd] = React.useState<string>('');
@@ -82,12 +92,39 @@ const ProjectDetail: React.FC = () => {
             {!project ? (
                 <>
                     <p className="text-red-600">Project not found.</p>
-                    <Link to="/projects" className="app-link hover:underline">Back to projects</Link>
+                    <Link to="/projects" className="app-link hover:underline">Back to all projects</Link>
                 </>
             ) : (
                 <>
-                    {/* Top-left back navigation */}
-                    <Link to="/projects" className="inline-block mb-4 app-link hover:underline">← Back to projects</Link>
+                    {/* Top navigation: Previous / Next controls */}
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        {prevProject ? (
+                            <Link
+                                to={prevProject.link}
+                                className="btn-base btn-brand"
+                                aria-label={`Go to previous project: ${prevProject.title}`}
+                            >
+                                ← previous project
+                            </Link>
+                        ) : (
+                            <span className="btn-base opacity-50 pointer-events-none select-none" aria-disabled="true">← previous project</span>
+                        )}
+
+                        {nextProject ? (
+                            <Link
+                                to={nextProject.link}
+                                className="btn-base btn-brand"
+                                aria-label={`Go to next project: ${nextProject.title}`}
+                            >
+                                next project →
+                            </Link>
+                        ) : (
+                            <span className="btn-base opacity-50 pointer-events-none select-none" aria-disabled="true">next project →</span>
+                        )}
+                    </div>
+
+                    {/* Distinct small back link to all projects to avoid confusion with prev/next buttons */}
+                    <Link to="/projects" className="inline-block mb-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary-accent)]">← Back to all projects</Link>
                     <h1 className="text-2xl font-bold mb-3 text-[var(--color-text)]">{project.title}</h1>
 
                     {skills.length ? (
@@ -133,7 +170,7 @@ const ProjectDetail: React.FC = () => {
                         <p className="text-[var(--color-text-muted)] mb-4">{project.description}</p>
                     )}
                     <div className="mt-6">
-                        <Link to="/projects" className="app-link hover:underline">← Back to projects</Link>
+                        <Link to="/projects" className="app-link hover:underline">← Back to all projects</Link>
                     </div>
                 </>
             )}
