@@ -84,7 +84,7 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 				autoPlay: autoplay,
 				muted: autoplay ? true : undefined,
 				playsInline: true,
-                preload: preloadAttr ?? 'none',
+                preload: preloadAttr ?? 'metadata',
                 poster,
 				className: 'w-full h-auto rounded-md',
 			};

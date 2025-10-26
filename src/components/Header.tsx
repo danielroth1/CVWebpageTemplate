@@ -6,7 +6,16 @@ const Header: React.FC = () => {
     return (
         <header className="bg-gray-900 text-white">
             <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                <Link to="/" className="text-lg font-semibold">My Personal CV</Link>
+                <Link to="/" className="flex items-center gap-3">
+                    {/* Prefer a JPG served from / (public/logo.jpg). If it doesn't exist the onError fallback will load the SVG we added to public/logo.svg */}
+                    <img
+                        src="/src/data/logo.jpg"
+                        alt="Logo"
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+                    />
+                    <span className="text-lg font-semibold">My Personal CV</span>
+                </Link>
                 <nav className="hidden md:block">
                     <ul className="flex items-center gap-4 text-sm">
                         <li>
