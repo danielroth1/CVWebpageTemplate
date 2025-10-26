@@ -1,6 +1,48 @@
 # Personal CV Web Page
 
 This project is a personal CV web page built with React and TypeScript. It showcases various projects, provides detailed project pages, and includes a responsive design for mobile compatibility.
+See [here](http://daniel.mailbase.info) for an example where this template is used.
+
+## Features
+- modern design
+- mobile compatible
+- easily customizable, you don't even need to know React
+- light / dark mode
+- count lines of codes (see multi-loc-config.json and cloc-mapping.json)
+
+## How to use
+Fork (if you want) or clone the repository directly:
+```
+git clone git@github.com:danielroth1/CVWebpageTemplate.git
+```
+
+You only have add the content via files in the /src/data folder. 
+After you have done the following customizations:
+- add your "about me" section (ABOUT_ME.md)
+- add your "contact" page (CONTACT.md)
+- add a personal picture or use a placeholder if you are not comfortable with it (peronal_photo.jpg)
+- add your own projects as a display of your achievements (projects.json + projects/)
+- add your resume as pdf for download (resume.pdf)
+
+set it up
+```
+npm run install
+```
+
+try it out
+```
+npm run dev
+```
+
+create distributable
+```
+npm run build
+```
+
+and deploy it. I have provided a script for deployment on a ftp file server, see scripts/deploy.sh
+```
+./scripts/deploy.sh
+```
 
 ## Project Structure
 
