@@ -188,3 +188,19 @@ This project is licensed under the MIT License.
 ### Icons
 
 - The navigation includes icons via `react-icons` (Home, Projects, About, Resume).
+
+## Video embeds and Safari stability
+
+Project pages can embed short demo videos in markdown using a custom tag, for example:
+
+```
+<webm src="./preview.webm" max-width="600" />
+```
+
+Under the hood the app will prefer an H.264 MP4 fallback on Safari and load videos lazily with `preload="none"` to improve stability on mobile browsers. For best results, generate compressed variants next to your original files:
+
+```
+npm run compress-videos
+```
+
+This creates `[name].min.webm` (VP9) and `[name].min.mp4` (H.264) beside each `*.webm` under `src/data/**`. The renderer will automatically use these smaller variants when available. Requires `ffmpeg` (macOS: `brew install ffmpeg`).

@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "loc": "node scripts/count-loc.js",
-    "multi-loc": "node scripts/run-multi-loc.js"
+    "multi-loc": "node scripts/run-multi-loc.js",
+    "compress-videos": "node scripts/compress-videos.js"
   },
   "dependencies": {
     "@react-spring/web": "^10.0.3",

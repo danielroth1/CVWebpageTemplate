@@ -1,6 +1,6 @@
 import React from 'react';
 import resolveMarkdownImage from './markdownImageResolver';
-import resolveMarkdownVideo from './markdownVideoResolver';
+import resolveMarkdownVideo, { resolveVideoVariants } from './markdownVideoResolver';
 import { SkillBadgeMarkdown } from '../components/SkillBadge';
 import { YouTubeEmbedMarkdown } from '../components/YouTubeEmbed';
 import {
@@ -34,7 +34,12 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 			const autoplayAttr = props.autoplay ?? node?.properties?.autoplay;
 			const loopAttr = (props['auto-loop'] ?? props.autoloop ?? props.loop ?? node?.properties?.['auto-loop'] ?? node?.properties?.autoloop ?? node?.properties?.loop) as any;
 			const controlsAttr = props.controls ?? node?.properties?.controls;
-			const resolved = resolveMarkdownVideo(originPath, srcAttr as string | undefined) || srcAttr;
+            const posterAttr = props.poster ?? node?.properties?.poster; // optional poster image
+            const preloadAttr = props.preload ?? node?.properties?.preload; // allow override
+
+            const resolved = resolveMarkdownVideo(originPath, srcAttr as string | undefined) || srcAttr;
+            const variants = resolveVideoVariants(originPath, srcAttr as string | undefined);
+            const poster = posterAttr ? resolveMarkdownImage(originPath, String(posterAttr)) || String(posterAttr) : undefined;
 
 			if (!resolved) {
 				return React.createElement('div', { className: 'not-prose text-red-600 text-sm' }, 'Video source not found');
@@ -74,19 +79,44 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 
 			// For autoplay to work across browsers, set muted and playsInline
 			const videoProps: Record<string, any> = {
-				src: resolved,
 				controls,
 				loop,
 				autoPlay: autoplay,
 				muted: autoplay ? true : undefined,
 				playsInline: true,
+                preload: preloadAttr ?? 'none',
+                poster,
 				className: 'w-full h-auto rounded-md',
 			};
+
+            // Build <source> list preferring MP4 for Safari
+            const sources: Array<Record<string, any>> = [];
+            if (variants.mp4Min) sources.push({ src: variants.mp4Min, type: 'video/mp4' });
+            if (variants.mp4) sources.push({ src: variants.mp4, type: 'video/mp4' });
+            // Also include resolved (legacy) if it's an mp4 url
+            if (typeof resolved === 'string' && /\.mp4($|\?)/i.test(String(resolved))) {
+                sources.push({ src: resolved as string, type: 'video/mp4' });
+            }
+            if (variants.webmMin) sources.push({ src: variants.webmMin, type: 'video/webm' });
+            if (variants.webm) sources.push({ src: variants.webm, type: 'video/webm' });
+            // Finally include the original resolved (legacy) if it's webm and not already included
+            if (typeof resolved === 'string' && /\.webm($|\?)/i.test(String(resolved))) {
+                const already = sources.some((s) => s.src === resolved);
+                if (!already) sources.push({ src: resolved as string, type: 'video/webm' });
+            }
 
 			return React.createElement(
 				'div',
 				{ className: 'not-prose w-full', style: containerStyle },
-				[React.createElement('video', { key: 'v', ...videoProps })],
+                [
+                    React.createElement(
+                        'video',
+                        { key: 'v', ...videoProps },
+                        sources.length
+                            ? sources.map((s, i) => React.createElement('source', { key: `src-${i}`, ...s }))
+                            : undefined,
+                    ),
+                ],
 			);
 		},
 		skill: SkillBadgeMarkdown,

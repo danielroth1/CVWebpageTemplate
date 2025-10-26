@@ -21,13 +21,13 @@ try {
   previewEntries = [];
 }
 
-// Eagerly import all preview videos under data/projects/**/preview.<ext> as URLs
-// Supported extensions: mp4, webm, ogg
-type VideoEntry = { key: string; url: string; dir: string; folder: string; normFolder: string; type: string };
+// Eagerly import all preview videos under data/projects/**/preview[.min].<ext> as URLs
+// Supported extensions: mp4, webm, ogg. We also pick up preview.min.<ext> and prefer those.
+type VideoEntry = { key: string; url: string; dir: string; folder: string; normFolder: string; type: string; isMin: boolean };
 let previewVideoEntries: VideoEntry[] = [];
 try {
   // @ts-ignore - Vite replaces this at build time
-  const vmods = import.meta.glob('../data/projects/**/preview.{mp4,webm,ogg}', {
+  const vmods = import.meta.glob('../data/projects/**/preview*.{mp4,webm,ogg}', {
     eager: true,
     query: '?url', import: 'default',
   }) as Record<string, string>;
@@ -39,7 +39,8 @@ try {
     const normFolder = normalize(folder);
     const ext = normalizedKey.split('.').pop()?.toLowerCase() ?? '';
     const type = ext === 'mp4' ? 'video/mp4' : ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/*';
-    return { key: normalizedKey, url, dir, folder, normFolder, type };
+    const isMin = /\/preview\.min\.(mp4|webm|ogg)$/i.test(normalizedKey);
+    return { key: normalizedKey, url, dir, folder, normFolder, type, isMin };
   });
 } catch {
   previewVideoEntries = [];
@@ -110,13 +111,20 @@ export function getProjectPreviewVideoSources(project: Project): ProjectPreviewV
 
   if (!matches.length) return [];
 
-  // Deduplicate by type and sort by preferred order: webm, mp4, ogg
+  // Deduplicate by type, preferring min variants when available; then sort by preferred order: webm, mp4, ogg
   const order = ['video/webm', 'video/mp4', 'video/ogg'];
-  const byType = new Map<string, ProjectPreviewVideoSource>();
+  const grouped = new Map<string, VideoEntry[]>();
   for (const m of matches) {
-    if (!byType.has(m.type)) {
-      byType.set(m.type, { src: m.url, type: m.type });
-    }
+    const arr = grouped.get(m.type) ?? [];
+    arr.push(m);
+    grouped.set(m.type, arr);
   }
-  return Array.from(byType.values()).sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+  const chosen: ProjectPreviewVideoSource[] = [];
+  grouped.forEach((arr, type) => {
+    // Prefer min variant; fallback to any
+    const min = arr.find((x: VideoEntry) => x.isMin);
+    const pick = min ?? arr[0];
+    chosen.push({ src: pick.url, type });
+  });
+  return chosen.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
 }

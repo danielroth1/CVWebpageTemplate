@@ -4,12 +4,12 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Create a mapping of all .webm assets under src/data to their final URLs.
+// Create a mapping of all .webm/.mp4 assets under src/data to their final URLs.
 const videoModules: Record<string, string> = (() => {
   try {
     // Eagerly load URLs for video assets under data/**
     // @ts-ignore - import.meta.glob is supported by Vite and typed as any here
-    const mods = import.meta.glob('../data/**/*.webm', { query: '?url', import: 'default', eager: true });
+    const mods = import.meta.glob('../data/**/*.{webm,mp4}', { query: '?url', import: 'default', eager: true });
     return mods as Record<string, string>;
   } catch (e) {
     // If import.meta.glob isn't available (non-Vite environment), return empty mapping
@@ -62,4 +62,67 @@ export default function resolveMarkdownVideo(markdownPath: string | undefined, v
   if (found) return videoModules[found];
 
   return undefined;
+}
+
+/**
+ * Resolve sibling variants for a given video src.
+ * For an input like "clip.webm", we will look for (in same folder relative to the markdown):
+ * - clip.min.mp4
+ * - clip.mp4
+ * - clip.min.webm
+ * - clip.webm
+ * Returns any found as an object of URLs.
+ */
+export function resolveVideoVariants(
+  markdownPath: string | undefined,
+  vidSrc: string | undefined,
+): { mp4Min?: string; mp4?: string; webmMin?: string; webm?: string } {
+  const out: { mp4Min?: string; mp4?: string; webmMin?: string; webm?: string } = {};
+  if (!vidSrc || !markdownPath) return out;
+
+  const s = String(vidSrc).trim();
+  // External or absolute paths: we can't infer siblings, just return the given as best-effort
+  if (/^https?:\/\//i.test(s) || s.startsWith('/')) {
+    const lower = s.toLowerCase();
+    if (lower.endsWith('.mp4')) out.mp4 = s;
+    if (lower.endsWith('.webm')) out.webm = s;
+    return out;
+  }
+
+  // Build base (without extension) for sibling probing
+  const md = normalizePath(markdownPath.replace(/^\.\//, '').replace(/^\//, ''));
+  const dir = md.replace(/\/[^/]*$/, '/');
+  const rel = s.replace(/^\.\//, '');
+
+  const base = rel.replace(/\.(webm|mp4)$/i, '');
+  const candidates = [
+    `${base}.min.mp4`,
+    `${base}.mp4`,
+    `${base}.min.webm`,
+    `${base}.webm`,
+  ];
+
+  const makeCandidates = (fname: string) => [
+    `src/${dir}${fname}`,
+    `${dir}${fname}`,
+    `${dir}${fname}`.replace(/^\.\//, ''),
+    `./src/${dir}${fname}`,
+    `../data/${dir}${fname}`,
+  ].map(normalizePath);
+
+  const keys = Object.keys(videoModules);
+  const find = (fname: string): string | undefined => {
+    for (const cand of makeCandidates(fname)) {
+      const found = keys.find((k) => normalizePath(k).toLowerCase().endsWith(cand.toLowerCase()));
+      if (found) return videoModules[found];
+    }
+    return undefined;
+  };
+
+  const [mp4Min, mp4, webmMin, webm] = candidates.map(find);
+  if (mp4Min) out.mp4Min = mp4Min;
+  if (mp4) out.mp4 = mp4;
+  if (webmMin) out.webmMin = webmMin;
+  if (webm) out.webm = webm;
+  return out;
 }
