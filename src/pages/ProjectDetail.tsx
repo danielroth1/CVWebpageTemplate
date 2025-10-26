@@ -11,11 +11,13 @@ import { useMarkdownComponents } from '../utils/markdownComponents';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 import useWindowSize from '../hooks/useWindowSize';
+import { getProjectDateDisplay } from '../utils/dates';
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const project = projectsData.projects.find((p) => p.id === id);
     const skills = project?.skills ?? [];
+    const dateDisplay = project ? getProjectDateDisplay(project) : null;
 
     // Determine next/previous projects based on the ordering in projects.json
     const { prevProject, nextProject } = React.useMemo(() => {
@@ -125,7 +127,10 @@ const ProjectDetail: React.FC = () => {
 
                     {/* Distinct small back link to all projects to avoid confusion with prev/next buttons */}
                     <Link to="/projects" className="inline-block mb-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary-accent)]">← Back to all projects</Link>
-                    <h1 className="text-2xl font-bold mb-3 text-[var(--color-text)]">{project.title}</h1>
+                    <h1 className="text-2xl font-bold mb-1 text-[var(--color-text)]">{project.title}</h1>
+                    {dateDisplay && (
+                        <div className="mb-3 text-sm font-medium text-slate-600 dark:text-slate-300">{dateDisplay}</div>
+                    )}
 
                     {skills.length ? (
                         <div className="mb-4 flex flex-wrap gap-2">

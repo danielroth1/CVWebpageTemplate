@@ -5,6 +5,7 @@ import { getProjectPreviewUrl, getProjectPreviewVideoSources, type ProjectPrevie
 import SkillBadge from './SkillBadge';
 import { getAllCloc } from '../utils/clocLoader';
 import Tooltip from './Tooltip';
+import { getProjectDateDisplay } from '../utils/dates';
 
 // Cache computed LOC map globally to avoid recomputation per card re-render.
 let __cachedLocMap: Record<string, number> | null = null;
@@ -34,6 +35,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
     const cardRef = React.useRef<HTMLAnchorElement | null>(null);
     const locMap = React.useMemo(() => getFolderLocMap(), []);
+    const dateDisplay = React.useMemo(() => getProjectDateDisplay(project), [project]);
     // Derive folder from markdownUrl to match how ProjectDetail resolves cloc.json
     // Derive total LOC; if project lacks markdown or cloc file we simply omit the badge (no placeholder shown).
     const totalLoc = React.useMemo(() => {
@@ -118,6 +120,11 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             onFocus={() => setHovered(true)}
             onBlur={() => setHovered(false)}
         >
+            {dateDisplay && (
+                <div className="-mt-1 mb-2 text-xs font-medium text-slate-600 dark:text-slate-300 tracking-tight">
+                    {dateDisplay}
+                </div>
+            )}
             {(preview || videoSources.length) && (
                 <div 
                     className="mb-3 -mt-1 -mx-1 relative h-32 overflow-hidden rounded"
