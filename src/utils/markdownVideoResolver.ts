@@ -7,9 +7,10 @@
 // Create a mapping of all .webm/.mp4 assets under src/data to their final URLs.
 const videoModules: Record<string, string> = (() => {
   try {
-    // Eagerly load URLs for video assets under data/**
+    // Eagerly load URLs for *minified* video assets under data/**
+    // We only import `.min.webm` and `.min.mp4` so Vite only bundles the small versions
     // @ts-ignore - import.meta.glob is supported by Vite and typed as any here
-    const mods = import.meta.glob('../data/**/*.{webm,mp4}', { query: '?url', import: 'default', eager: true });
+    const mods = import.meta.glob('../data/**/*.min.{webm,mp4}', { query: '?url', import: 'default', eager: true });
     return mods as Record<string, string>;
   } catch (e) {
     // If import.meta.glob isn't available (non-Vite environment), return empty mapping
@@ -51,14 +52,32 @@ export default function resolveMarkdownVideo(markdownPath: string | undefined, v
     `../data/${dir}${rel}`,
   ].map(normalizePath);
 
+  // If the markdown references the non-minified name (e.g. "clip.webm") try the
+  // corresponding .min variant first ("clip.min.webm") so we resolve to the
+  // smaller file that is actually bundled.
+  const relMin = rel.replace(/\.(webm|mp4)$/i, '.min.$1');
+  const minCandidates = [
+    `src/${dir}${relMin}`,
+    `${dir}${relMin}`,
+    `${dir}${relMin}`.replace(/^\.\//, ''),
+    `./src/${dir}${relMin}`,
+    `../data/${dir}${relMin}`,
+  ].map(normalizePath);
+
+  // Prefer minCandidates first
+  const probeList = [...minCandidates, ...candidates];
+
   const keys = Object.keys(videoModules);
-  for (const cand of candidates) {
+  for (const cand of probeList) {
     const found = keys.find((k) => normalizePath(k).toLowerCase().endsWith(cand.toLowerCase()));
     if (found) return videoModules[found];
   }
 
-  // As a last resort, try suffix-only match on the src
-  const found = keys.find((k) => normalizePath(k).toLowerCase().endsWith(rel.toLowerCase()));
+  // As a last resort, try suffix-only match on the src or the .min variant
+  const found = keys.find((k) => {
+    const lk = normalizePath(k).toLowerCase();
+    return lk.endsWith(rel.toLowerCase()) || lk.endsWith(relMin.toLowerCase());
+  });
   if (found) return videoModules[found];
 
   return undefined;

@@ -21,13 +21,13 @@ try {
   previewEntries = [];
 }
 
-// Eagerly import all preview videos under data/projects/**/preview[.min].<ext> as URLs
-// Supported extensions: mp4, webm, ogg. We also pick up preview.min.<ext> and prefer those.
+// Eagerly import preview videos under data/projects/**/preview.min.<ext> as URLs
+// Supported extensions: mp4, webm, ogg. We only import preview.min.<ext> so non-min videos are not bundled.
 type VideoEntry = { key: string; url: string; dir: string; folder: string; normFolder: string; type: string; isMin: boolean };
 let previewVideoEntries: VideoEntry[] = [];
 try {
   // @ts-ignore - Vite replaces this at build time
-  const vmods = import.meta.glob('../data/projects/**/preview*.{mp4,webm,ogg}', {
+  const vmods = import.meta.glob('../data/projects/**/preview.min.{mp4,webm,ogg}', {
     eager: true,
     query: '?url', import: 'default',
   }) as Record<string, string>;
