@@ -2,6 +2,15 @@ import React from 'react';
 import projectsData from '../data/projects.json';
 import type { Project } from '../types';
 import SkillBadge from './SkillBadge';
+import skillsData from '../data/skills.json';
+import {
+  getSkillRingClass,
+  getSkillBorderStrong,
+  getSkillSelectedRing,
+  getSkillBorderHover,
+  getSkillBadgeHoverBg,
+  getSkillChipClasses,
+} from '../utils/skillColors';
 
 interface ProjectFilterBarProps {
   active: string[];
@@ -19,7 +28,31 @@ function uniqueSkills(projects: Project[]): string[] {
 }
 
 const allProjects: Project[] = (projectsData as any).projects;
-const allSkills = uniqueSkills(allProjects);
+
+// Build an order map from skills.json groups so we can sort skills by category order
+const __orderMap: Map<string, { groupIdx: number; idx: number }> = new Map();
+(skillsData.groups || []).forEach((group: string[], groupIdx: number) => {
+  group.forEach((s, idx) => {
+    __orderMap.set(s, { groupIdx, idx });
+  });
+});
+
+function sortSkillsByCategories(skills: string[]): string[] {
+  return skills.slice().sort((a, b) => {
+    const oa = __orderMap.get(a);
+    const ob = __orderMap.get(b);
+    if (oa && ob) {
+      if (oa.groupIdx !== ob.groupIdx) return oa.groupIdx - ob.groupIdx;
+      if (oa.idx !== ob.idx) return oa.idx - ob.idx;
+      return a.localeCompare(b);
+    }
+    if (oa && !ob) return -1; // known categories first
+    if (!oa && ob) return 1;
+    return a.localeCompare(b);
+  });
+}
+
+const allSkills = sortSkillsByCategories(uniqueSkills(allProjects));
 
 const ProjectFilterBar: React.FC<ProjectFilterBarProps> = ({ active, onChange, className, mode = 'OR', onModeChange }) => {
   const toggle = (skill: string) => {
@@ -56,15 +89,15 @@ const ProjectFilterBar: React.FC<ProjectFilterBarProps> = ({ active, onChange, c
               key={skill}
               type="button"
               onClick={() => toggle(skill)}
-              className={`group focus-visible:outline-none focus-visible:ring focus-visible:ring-primary-500 rounded-full transition`}
+              className={`group focus-visible:outline-none focus-visible:ring ${getSkillRingClass(skill)} rounded-full transition`}
               aria-pressed={selected}
               aria-label={`Filter by skill ${skill}`}
             >
               <SkillBadge
                 className={`cursor-pointer select-none border-2 transition-all transform-gpu ${
                   selected
-                    ? '!border-primary-600 dark:!border-primary-500 dark:text-white dark:bg-primary-500 dark:text-white font-bold shadow-lg scale-105 ring-4 ring-primary-400/30 dark:ring-primary-300/30'
-                    : 'border-slate-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-300 hover:bg-primary-50/60 dark:hover:bg-slate-700'
+                    ? `${getSkillBorderStrong(skill)} dark:text-white dark:bg-slate-800 font-bold shadow-lg scale-105 ${getSkillSelectedRing(skill)}`
+                    : `border-slate-300 dark:border-slate-600 ${getSkillBorderHover(skill)} ${getSkillBadgeHoverBg(skill)}`
                 } `}
               >
                 {skill}
@@ -90,7 +123,7 @@ const ProjectFilterBar: React.FC<ProjectFilterBarProps> = ({ active, onChange, c
               key={f}
               type="button"
               onClick={() => onChange(active.filter((s) => s !== f))}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-600/10 dark:bg-primary-400/20 text-primary-700 dark:text-primary-200 border border-primary-400/40 hover:bg-primary-600/20 dark:hover:bg-primary-400/30 transition focus-visible:outline-none focus-visible:ring focus-visible:ring-primary-500"
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border transition focus-visible:outline-none focus-visible:ring ${getSkillChipClasses(f)} ${getSkillRingClass(f)}`}
               aria-label={`Remove filter ${f}`}
               title="Remove filter"
             >

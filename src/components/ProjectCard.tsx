@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Project } from '../types';
 import { getProjectPreviewUrl, getProjectPreviewVideoSources, type ProjectPreviewVideoSource } from '../utils/previews';
 import SkillBadge from './SkillBadge';
+import { getSkillBadgeHoverBg, getSkillBorderHover } from '../utils/skillColors';
 import { getAllCloc } from '../utils/clocLoader';
 import Tooltip from './Tooltip';
 import { getProjectDateDisplay } from '../utils/dates';
@@ -188,8 +189,12 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             {skills.length ? (
                 <div className="mb-3 flex flex-wrap gap-2">
                     {skills.map((skill) => (
-                        <SkillBadge key={skill} className="hover:shadow-glow transition-shadow" >
-                          <span title={skill}>{skill}</span>
+                        <SkillBadge
+                            key={skill}
+                            skill={skill}
+                            className={`hover:shadow-glow transition-shadow border-slate-300 dark:border-slate-600 ${getSkillBorderHover(skill)} ${getSkillBadgeHoverBg(skill)}`}
+                        >
+                            <span title={skill}>{skill}</span>
                         </SkillBadge>
                     ))}
                 </div>
