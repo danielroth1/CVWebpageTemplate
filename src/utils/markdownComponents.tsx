@@ -12,7 +12,7 @@ import {
   LinuxButtonMarkdown,
 } from '../components/IconButton';
 import { FaEnvelope } from 'react-icons/fa';
-import resumeData from '../data/RESUME.json';
+import resumeData from '../data/resume.json';
 import ReactMarkdown from 'react-markdown';
 import { HighlightMarkdown } from './Highlight';
 

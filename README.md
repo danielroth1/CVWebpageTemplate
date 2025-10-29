@@ -154,7 +154,7 @@ This project is licensed under the MIT License.
 ### Resume page
 
 - The Resume page at `/resume` will prefer `src/data/RESUME.md` if present.
-- If `RESUME.md` is not present, it will look for `src/data/RESUME.json` with the shape:
+- If `RESUME.md` is not present, it will look for `src/data/resume.json` with the shape:
 
 ```
 {
@@ -181,7 +181,7 @@ This project is licensed under the MIT License.
 
 - The Contact page at `/contact` loads markdown from `src/data/CONTACT.md`.
 - Create or edit `src/data/CONTACT.md` to customize the introductory text (supports GitHub-flavored markdown).
-- The page still uses `profile.email` from `RESUME.json` for the mailto button; keep that field updated.
+- The page still uses `profile.email` from `resume.json` for the mailto button; keep that field updated.
 
 - Place a `resume.pdf` in the `public/` folder to enable the Download Resume button and inline PDF preview.
 

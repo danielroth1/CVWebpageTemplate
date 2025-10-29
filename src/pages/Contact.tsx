@@ -3,7 +3,7 @@ import { FaEnvelopeOpenText } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 import loadMarkdown from '../utils/markdownLoader';
 import { useMarkdownComponents } from '../utils/markdownComponents';
 

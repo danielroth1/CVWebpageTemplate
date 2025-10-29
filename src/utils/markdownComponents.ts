@@ -15,7 +15,7 @@ import {
 } from '../components/IconButton';
 import { FaEnvelope } from 'react-icons/fa';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import resumeData from '../data/RESUME.json';
+import resumeData from '../data/resume.json';
 import ReactMarkdown from 'react-markdown';
 import { HighlightMarkdown } from './Highlight';
 

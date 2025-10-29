@@ -1,7 +1,7 @@
 import React from 'react';
 import AboutSection from '../components/AboutSection';
 import PersonalPhoto from '../components/PersonalPhoto';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 
 const About: React.FC = () => {
   const profile = (resume as any).profile as { name?: string } | undefined;

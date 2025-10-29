@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 import personal_photo from '../data/personal_photo.jpg';
 import { NavLink } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';

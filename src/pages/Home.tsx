@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ProjectList from '../components/ProjectList';
 import AllCodeStats from '../components/AllCodeStats';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 import personal_photo from '../data/personal_photo.jpg';
 import Resume from '../components/Resume';
 import AboutSection from '../components/AboutSection';
 
 const Home: React.FC = () => {
-    // Profile information now lives in RESUME.json
+    // Profile information now lives in resume.json
     const profile = (resume as any).profile as { name: string; title: string; skills: string[] } | undefined;
     const work = (resume as any).work as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
     const education = (resume as any).education as Array<{ startYear: string; endYear: string; position: string; company: string }> | undefined;
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="text-gray-500">Add your education in src/data/RESUME.json</li>
+                                    <li className="text-gray-500">Add your education in src/data/resume.json</li>
                                 )}
                             </ul>
                         </div>
@@ -56,7 +56,7 @@ const Home: React.FC = () => {
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="text-gray-500">Add your work history in src/data/RESUME.json</li>
+                                    <li className="text-gray-500">Add your work history in src/data/resume.json</li>
                                 )}
                             </ul>
                         </div>

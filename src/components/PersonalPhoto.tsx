@@ -1,6 +1,6 @@
 import React from 'react';
 import personal_photo from '../data/personal_photo.jpg';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 
 // Tailwind cannot see runtime-generated arbitrary classes (w-[${size}px]) in build-time purge.
 // Provide fixed presets and allow custom numeric size via inline styles.

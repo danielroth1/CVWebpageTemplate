@@ -1,5 +1,5 @@
 import React from 'react';
-import resume from '../data/RESUME.json';
+import resume from '../data/resume.json';
 import legal from '../data/legal.json';
 
 const Footer: React.FC = () => {

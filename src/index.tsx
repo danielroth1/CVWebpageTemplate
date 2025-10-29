@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
 
-// Set document title from RESUME.json profile.name
-import resumeData from './data/RESUME.json';
+// Set document title from resume.json profile.name
+import resumeData from './data/resume.json';
 const profileName = (resumeData as any)?.profile?.name ?? '';
 if (profileName) {
   document.title = `${profileName} - CV`;

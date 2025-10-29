@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import loadMarkdown from '../utils/markdownLoader';
-import { SkillBadgeMarkdown } from './SkillBadge';
+import SkillBadge, { SkillBadgeMarkdown } from './SkillBadge';
 
 type ResumeJsonEntry = {
   startYear: string;
@@ -39,7 +39,7 @@ export type ResumeProps = {
 };
 
 const RESUME_MD_PATH = 'data/RESUME.md';
-const RESUME_JSON_PATH = 'data/RESUME.json';
+const RESUME_JSON_PATH = 'data/resume.json';
 
 // Attempt to locate a resume PDF under src/data, e.g., src/data/resume.pdf
 let resumePdfUrlFromSrc: string | null = null;
@@ -61,7 +61,7 @@ async function loadResumeJson(): Promise<ResumeJson | null> {
   // Try Vite eager glob from src first
   try {
     // @ts-ignore - Vite replaces this at build time
-    const mods = import.meta.glob('../data/RESUME.json', { eager: true });
+    const mods = import.meta.glob('../data/resume.json', { eager: true });
     const values = Object.values(mods) as unknown as Array<{ default: ResumeJson }>;
     if (values.length && values[0]?.default) {
       return values[0].default;
@@ -69,9 +69,9 @@ async function loadResumeJson(): Promise<ResumeJson | null> {
   } catch {
     // ignore
   }
-  // Fallback: try fetching from public/data/RESUME.json
+  // Fallback: try fetching from public/data/resume.json
   try {
-    const res = await fetch('/data/RESUME.json');
+    const res = await fetch('/data/resume.json');
     if (res.ok) {
       return (await res.json()) as ResumeJson;
     }
@@ -276,12 +276,7 @@ const Resume: React.FC<ResumeProps> = ({ showTitle = false, showPdfPreview = fal
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {items.map((s) => (
-                          <span
-                            key={category + s}
-                            className="px-2 py-1 rounded bg-blue-600/10 text-blue-900 dark:text-blue-200 text-xs border border-blue-600/30"
-                          >
-                            {s}
-                          </span>
+                          <SkillBadge key={s}>{s}</SkillBadge>
                         ))}
                       </div>
                     </div>
