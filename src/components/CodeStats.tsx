@@ -34,6 +34,15 @@ interface CodeStatsProps {
 
 type LabelPart = { type: 'text'; value: string } | { type: 'skill'; value: string };
 
+// Extract <skill>Skill</skill> from a mapping label. If present, we return that pure skill name.
+// Otherwise, we return null to indicate non-skill label (or free text only).
+function extractSkill(label: string): string | null {
+    if (!label) return null;
+    const m = label.match(/<skill>(.*?)<\/skill>/i);
+    if (!m) return null;
+    return m[1].trim();
+}
+
 function resolveLabelParts(label: string): LabelPart[] {
     const parts: LabelPart[] = [];
     const regex = /<skill>(.*?)<\/skill>/gi;
@@ -107,18 +116,37 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
         return { filteredLanguages: filtered, adjustedTotal: adjTotal };
     }, [rawTotal, languages]);
 
+    // Consolidate entries that map to the same <skill> into a single row with summed LOC.
+    // For entries without a <skill> tag, we keep their resolved label as-is (no merging across different labels).
+    const aggregated = React.useMemo(() => {
+        const byKey = new Map<string, { code: number; isSkill: boolean }>();
+        for (const entry of filteredLanguages || []) {
+            const code = typeof entry.code === 'number' ? entry.code : 0;
+            if (!code) continue;
+            const label = resolveLabel(entry.language);
+            const skill = extractSkill(label);
+            const key = skill ?? label ?? entry.language;
+            const prev = byKey.get(key)?.code ?? 0;
+            byKey.set(key, { code: prev + code, isSkill: !!skill });
+        }
+        const list = Array.from(byKey.entries()).map(([language, v]) => ({ language, code: v.code, isSkill: v.isSkill }));
+        // Sort descending by code for a stable display
+        list.sort((a, b) => b.code - a.code);
+        return list;
+    }, [filteredLanguages, resolveLabel]);
+
     const [animatedTotals, setAnimatedTotals] = React.useState({ files: 0, code: 0 });
     const [animatedSkills, setAnimatedSkills] = React.useState<Record<string, number>>({});
     const [collapsed, setCollapsed] = React.useState<boolean>(defaultCollapsed);
 
-    // Run count-up when visible first time
+        // Run count-up when visible first time
     React.useEffect(() => {
       if (collapsed) return;
-      const totalFiles = adjustedTotal?.nFiles;
-      const totalCode = adjustedTotal?.code;
-      const skills = filteredLanguages || [];
-      animateNumbers(skills, totalFiles || 0, totalCode || 0, setAnimatedTotals, setAnimatedSkills);
-    }, [adjustedTotal, filteredLanguages, collapsed]);
+            const totalFiles = adjustedTotal?.nFiles;
+            const totalCode = adjustedTotal?.code;
+            const skills = (aggregated || []).map(({ language, code }) => ({ language, code }));
+            animateNumbers(skills, totalFiles || 0, totalCode || 0, setAnimatedTotals, setAnimatedSkills);
+        }, [adjustedTotal, aggregated, collapsed]);
 
     // Screen size (match Tailwind's lg)
     const { width } = useWindowSize();
@@ -197,16 +225,20 @@ const CodeStats: React.FC<CodeStatsProps> = ({ clocData, languageMapping, overri
                             ) : (
                                 <div className="mb-3 mr-4">No total summary available</div>
                             )}
-                            {animatedSkills && Object.keys(animatedSkills).length ? (
+                            {aggregated && aggregated.length ? (
                                 <>
                                     <div className="my-2 border-t app-border" />
                                     <div className="space-y-2 max-h-48 overflow-auto">
-                                        {Object.entries(animatedSkills).map(([language, code]) => {
-                                            const label = resolveLabel(language);
+                                        {aggregated.map((item) => {
+                                            const code = animatedSkills[item.language] ?? 0;
                                             return (
-                                                <div key={`${language}-${code}`} className="flex justify-between gap-3 mr-4">
+                                                <div key={`${item.language}`} className="flex justify-between gap-3 mr-4">
                                                     <div className="flex flex-wrap items-center gap-1 text-xs text-[var(--color-text-muted)]">
-                                                        {renderLabel(label)}
+                                                        {item.isSkill ? (
+                                                            <SkillBadge>{item.language}</SkillBadge>
+                                                        ) : (
+                                                            renderLabel(item.language)
+                                                        )}
                                                     </div>
                                                     <div className="text-xs font-mono">{code}</div>
                                                 </div>
