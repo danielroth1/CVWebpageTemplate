@@ -16,25 +16,35 @@ Fork (if you want) or clone the repository directly:
 git clone git@github.com:danielroth1/CVWebpageTemplate.git
 ```
 
-You only have add the content via files in the /src/data folder. 
+You only have add the content via files in the `/src/data` folder. 
 After you have done the following customizations:
-- add your "about me" section (ABOUT_ME.md)
-- add your "contact" page (CONTACT.md)
-- add a personal picture or use a placeholder if you are not comfortable with it (peronal_photo.jpg)
-- add your own projects as a display of your achievements (projects.json + projects/)
-- add your resume as pdf for download (resume.pdf)
+- Add your resume information like name, title, e-mail, skills to `resume.json`
+- Add your "about me" section (ABOUT_ME.md)
+- Add your "contact" page (CONTACT.md)
+- Add a personal picture or use a placeholder if you are not comfortable with it (peronal_photo.jpg)
+- Add your own projects as a display of your achievements
+  - Add a project description (projects.json + `README.md` inside `projects/<project-name>/`)
+  - Add a preview image for each project `/projects/<project-name>/preview.<video-extension>`
+  - After adding new videos, run `npm run compress-videos`
+  - Automatically count all lines of code: Specify the projects source location in `/multi-loc-config.json` and run `npm run multi-loc`. Alternatively, manually change the count in `/projects/<project-name>/cloc.json`
 
-set it up
+optional:
+- Add your resume as pdf for download (resume.pdf)
+- Add a logo to your website by placing any image to `/src/data/logo.<image-extension>` and running `npm run make-favicon`
+- Color match your skills by grouping them in `skills.json`
+- Change the Skill colors in `/src/utils/SkillColors.ts`
+
+Set it up
 ```
 npm run install
 ```
 
-try it out
+Try it out
 ```
 npm run dev
 ```
 
-create distributable
+Create distributable
 ```
 npm run build
 ```
@@ -42,6 +52,22 @@ npm run build
 and deploy it. I have provided a script for deployment on a ftp file server, see scripts/deploy.sh
 ```
 ./scripts/deploy.sh
+```
+
+### Optional
+Create your favicon
+```
+npm run make-favicon
+```
+
+Create code statistics
+```
+npm run multi-loc
+```
+
+Compress your videos (recommended)
+```
+npm run compress-videos
 ```
 
 ## Project Structure
@@ -116,31 +142,6 @@ The application will be available at `http://localhost:3000`.
 - Responsive design for mobile compatibility.
 - Sidebar navigation for easy access to different sections of the CV.
 
-## ToDo
-
-- add project component
-   - pictures
-   - used programming languages
-   - duration, when was it worked on?
-   - status (under development / completed)
-- allow to add more details to each job / education
-  - maybe a good idea to make this expandable
-  - add a separate component for this
-- download CV button
-- add "About me" section
-- color code programming languages (reference skill <-> project, work experience)
-
-- allow to add any kind of description / page with markdown
-  -> very efficient and powerful way of adding custom content
-  -> can just add the markdown from github?
-
-- simplify README.md for emplyers (not developer)
-  - if possible add download buttons for release version
-  - if possible add link to web page
-  - every project should have a very short description
-  - missing projects:
-    - 
-
 ## License
 
 This project is licensed under the MIT License.
@@ -150,32 +151,6 @@ This project is licensed under the MIT License.
 ### About page
 
 - Create or edit `src/data/ABOUT_ME.md` to populate the About page at `/about`.
-
-### Resume page
-
-- The Resume page at `/resume` will prefer `src/data/RESUME.md` if present.
-- If `RESUME.md` is not present, it will look for `src/data/resume.json` with the shape:
-
-```
-{
-   "profile": {
-      "name": "Jane Doe",
-      "title": "Software Developer",
-      "email": "jane.doe@example.com",
-      "skills": {
-         "Front-End": ["React", "TypeScript"],
-         "Backend": ["C#", "ASP.NET Core"],
-         "Databases": ["MySQL"],
-         "DevOps": ["Git"]
-      }
-   },
-   "work": [ { "startYear": "2022", "endYear": "Today", "position": "Senior Dev", "company": "Acme", "bullets": ["..."] } ],
-   "education": [ { "startYear": "2016", "endYear": "2020", "position": "B.Sc.", "company": "State University", "bullets": ["..."] } ]
-}
-```
-
-- If `profile.skills` is an object, categories will be rendered with headings on the Resume page. If it's a flat array, badges are rendered in a single group.
-- Add `resume.pdf` under `src/data/` to enable download & preview.
 
 ### Contact page
 
