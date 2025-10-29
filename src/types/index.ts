@@ -5,6 +5,8 @@ export interface Project {
     link: string;
     skills?: string[];
     'cloc-mapping-overwrite'?: Record<string, string>;
+    /** Optional start time in seconds for preview video shown on project cards */
+    preview_start?: number;
     /**
      * Optional single date string to display as-is (e.g., "2025" or "10/2024").
      * When present, ignore date_from/date_to and do not compute a span.

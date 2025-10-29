@@ -35,6 +35,11 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     const [hovered, setHovered] = React.useState(false);
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
     const cardRef = React.useRef<HTMLAnchorElement | null>(null);
+    const previewStart = React.useMemo(() => {
+        const raw = (project as any)?.preview_start;
+        const n = typeof raw === 'string' ? Number(raw) : raw;
+        return Number.isFinite(n) && n >= 0 ? (n as number) : undefined;
+    }, [project]);
     const locMap = React.useMemo(() => getFolderLocMap(), []);
     const dateDisplay = React.useMemo(() => getProjectDateDisplay(project), [project]);
     // Derive folder from markdownUrl to match how ProjectDetail resolves cloc.json
@@ -53,12 +58,15 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         if (!v) return;
         if (hovered) {
             // Attempt to play when hovered; ignore promise rejections from autoplay policies
+            try {
+                if (previewStart != null) v.currentTime = previewStart;
+            } catch {}
             v.play().catch(() => {});
         } else {
             v.pause();
             try { v.currentTime = 0; } catch {}
         }
-    }, [hovered]);
+    }, [hovered, previewStart]);
 
     // When hovered via pointer, keep playing even if the pointer leaves the window.
     // Desktop: stop when the pointer enters another area (pointerover onto an element outside this card).
@@ -149,6 +157,13 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                             playsInline
                             preload="metadata"
                             poster={preview}
+                            onLoadedMetadata={(e) => {
+                                if (previewStart == null) return;
+                                try {
+                                    const v = e.currentTarget as HTMLVideoElement;
+                                    if (v && v.readyState >= 1) v.currentTime = previewStart;
+                                } catch {}
+                            }}
                         >
                             {videoSources.map((s) => (
                                 <source key={s.type} src={s.src} type={s.type} />

@@ -24,7 +24,8 @@ export type MarkdownComponents = Parameters<typeof ReactMarkdown>[0]['components
 export function createMarkdownComponents(originPath: string): MarkdownComponents {
 	const components: any = {
 		// <webm src="./clip.webm" max-width="720px" autoplay auto-loop controls>
-		// Embeds a responsive .webm video with optional autoplay/loop and adjustable max width.
+		// Embeds a responsive .webm/.mp4 video with optional autoplay/loop and adjustable max width.
+		// Supports start (in seconds): <webm src="..." start="2.5" />
 		webm: (props: any) => {
 			const node = props.node as any;
 			const srcAttr = props.src ?? node?.properties?.src;
@@ -36,6 +37,7 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 			const controlsAttr = props.controls ?? node?.properties?.controls;
             const posterAttr = props.poster ?? node?.properties?.poster; // optional poster image
             const preloadAttr = props.preload ?? node?.properties?.preload; // allow override
+            const startAttr = props.start ?? node?.properties?.start; // optional start time in seconds
 
             const resolved = resolveMarkdownVideo(originPath, srcAttr as string | undefined) || srcAttr;
             const variants = resolveVideoVariants(originPath, srcAttr as string | undefined);
@@ -89,6 +91,14 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 				className: 'w-full h-auto rounded-md',
 			};
 
+            // Parse start time (seconds)
+            const parseStartSeconds = (val: any): number | undefined => {
+                if (val == null) return undefined;
+                const n = Number(val);
+                return Number.isFinite(n) && n >= 0 ? n : undefined;
+            };
+            const startSec = parseStartSeconds(startAttr);
+
             // Build <source> list preferring MP4 for Safari
             const sources: Array<Record<string, any>> = [];
             if (variants.mp4Min) sources.push({ src: variants.mp4Min, type: 'video/mp4' });
@@ -111,7 +121,16 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
                 [
                     React.createElement(
                         'video',
-                        { key: 'v', ...videoProps },
+						{
+							key: 'v',
+							...videoProps,
+							onLoadedMetadata: startSec != null ? (e: any) => {
+								try {
+									const v = e.currentTarget as HTMLVideoElement;
+									if (v && v.readyState >= 1) v.currentTime = startSec;
+								} catch {}
+							} : undefined,
+						},
                         sources.length
                             ? sources.map((s, i) => React.createElement('source', { key: `src-${i}`, ...s }))
                             : undefined,
