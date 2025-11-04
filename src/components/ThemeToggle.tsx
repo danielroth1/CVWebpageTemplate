@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTheme } from '../hooks/useTheme';
+import { useThemeContext } from '../hooks/ThemeContext';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle: React.FC<{ className?: string }> = ({ className }) => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useThemeContext();
   const isDark = theme === 'dark';
   return (
     <button

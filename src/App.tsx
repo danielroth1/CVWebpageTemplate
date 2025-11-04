@@ -1,4 +1,5 @@
 import React from 'react';
+import { ThemeProvider } from './hooks/ThemeContext';
 import { HashRouter } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -12,6 +13,7 @@ const App: React.FC = () => {
     // If you dont like the hashes in the addresses, you can use <BrowserRouter> instead.
     // Then make sure your server redirects all unknown routes to index.html, e.g. <address>/projects, <address>/contact, etc.
     <HashRouter>
+      <ThemeProvider>
       <div className="min-h-screen flex flex-col app-bg md:pb-0">
         {/* Not really needed because navigation is already possible via side bar */}
         {/* <Header /> */} 
@@ -27,6 +29,7 @@ const App: React.FC = () => {
         
         <Footer />
       </div>
+      </ThemeProvider>
     </HashRouter>
   );
 };

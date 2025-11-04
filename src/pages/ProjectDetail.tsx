@@ -90,7 +90,7 @@ const ProjectDetail: React.FC = () => {
     const isLg = width >= 1024;
 
     return (
-        <div className="p-4 lg:px-8 pb-2 mt-6 max-w-6xl content-center mx-auto">
+        <div className="px-4 lg:px-8 pb-2 mt-2 lg:mt-6 max-w-6xl content-center mx-auto">
             {!project ? (
                 <>
                     <p className="text-red-600">Project not found.</p>
@@ -99,29 +99,29 @@ const ProjectDetail: React.FC = () => {
             ) : (
                 <>
                     {/* Top navigation: Previous / Next controls */}
-                    <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="mb-4 top-12 z-40 sticky lg:relative lg:top-0 flex items-center justify-between gap-3">
                         {prevProject ? (
                             <Link
                                 to={prevProject.link}
-                                className="btn-base btn-brand"
+                                className="btn-base btn-brand btn-solid btn-equal"
                                 aria-label={`Go to previous project: ${prevProject.title}`}
                             >
-                                ← previous project
+                                ← previous
                             </Link>
                         ) : (
-                            <span className="btn-base opacity-50 pointer-events-none select-none" aria-disabled="true">← previous project</span>
+                            <span className="btn-base btn-disabled btn-equal pointer-events-none select-none" aria-disabled="true">← previous</span>
                         )}
 
                         {nextProject ? (
                             <Link
                                 to={nextProject.link}
-                                className="btn-base btn-brand"
+                                className="btn-base btn-brand btn-solid btn-equal"
                                 aria-label={`Go to next project: ${nextProject.title}`}
                             >
-                                next project →
+                                next →
                             </Link>
                         ) : (
-                            <span className="btn-base opacity-50 pointer-events-none select-none" aria-disabled="true">next project →</span>
+                            <span className="btn-base btn-disabled btn-equal pointer-events-none select-none" aria-disabled="true">next →</span>
                         )}
                     </div>
 
