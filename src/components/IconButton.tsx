@@ -1,13 +1,15 @@
 import React from 'react';
-import { FaGithub, FaLinkedin, FaWindows, FaApple, FaLinux, FaDownload, FaGlobe } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaWindows, FaApple, FaLinux, FaDownload, FaGlobe, FaFirefox, FaChrome } from 'react-icons/fa';
 
 type Platform = 'windows' | 'macos' | 'linux';
-type Kind = 'github' | 'linkedin' | 'download' | 'website';
+type Browser = 'firefox' | 'chrome';
+type Kind = 'github' | 'linkedin' | 'download' | 'website' | 'browser';
 
 export type IconButtonProps = {
   href?: string;
   kind?: Kind;
   platform?: Platform; // used when kind === 'download'
+  browser?: Browser; // used when kind === 'browser'
   download?: boolean;
   children?: React.ReactNode;
   className?: string;
@@ -23,11 +25,21 @@ function clsx(...parts: Array<string | undefined | false>) {
 const baseClasses =
   'inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-semibold shadow-sm no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1';
 
-function colorClasses(kind?: Kind, platform?: Platform): string {
+function colorClasses(kind?: Kind, platform?: Platform, browser?: Browser): string {
   // Use brand accent ring with subtle background tint; dark mode handled by CSS variables
   if (kind === 'github') return 'app-border bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-solid)]';
   if (kind === 'linkedin') return 'app-border bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface-solid)]';
   if (kind === 'website') return 'app-border bg-[var(--color-surface)] text-sky-600 dark:text-sky-300 hover:bg-[var(--color-surface-solid)]';
+  if (kind === 'browser') {
+    switch (browser) {
+      case 'firefox':
+        return 'app-border bg-[var(--color-surface)] text-orange-600 dark:text-orange-400 hover:bg-[var(--color-surface-solid)]';
+      case 'chrome':
+        return 'app-border bg-[var(--color-surface)] text-blue-600 dark:text-blue-400 hover:bg-[var(--color-surface-solid)]';
+      default:
+        return 'app-border bg-[var(--color-surface)] text-slate-600 dark:text-slate-300 hover:bg-[var(--color-surface-solid)]';
+    }
+  }
   if (kind === 'download') {
     switch (platform) {
       case 'windows':
@@ -43,10 +55,20 @@ function colorClasses(kind?: Kind, platform?: Platform): string {
   return 'app-border bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-solid)]';
 }
 
-function pickIcon(kind?: Kind, platform?: Platform): React.ReactNode {
+function pickIcon(kind?: Kind, platform?: Platform, browser?: Browser): React.ReactNode {
   if (kind === 'github') return <FaGithub aria-hidden />;
   if (kind === 'linkedin') return <FaLinkedin aria-hidden />;
   if (kind === 'website') return <FaGlobe aria-hidden />;
+  if (kind === 'browser') {
+    switch (browser) {
+      case 'firefox':
+        return <FaFirefox aria-hidden />;
+      case 'chrome':
+        return <FaChrome aria-hidden />;
+      default:
+        return <FaGlobe aria-hidden />;
+    }
+  }
   if (kind === 'download') {
     switch (platform) {
       case 'windows':
@@ -62,10 +84,15 @@ function pickIcon(kind?: Kind, platform?: Platform): React.ReactNode {
   return null;
 }
 
-function defaultLabel(kind?: Kind, platform?: Platform): string {
+function defaultLabel(kind?: Kind, platform?: Platform, browser?: Browser): string {
   if (kind === 'github') return 'GitHub';
   if (kind === 'linkedin') return 'LinkedIn';
   if (kind === 'website') return 'Website';
+  if (kind === 'browser') {
+    if (browser === 'firefox') return 'Firefox';
+    if (browser === 'chrome') return 'Chrome';
+    return 'Browser';
+  }
   if (kind === 'download') {
     if (platform === 'windows') return 'Download for Windows';
     if (platform === 'macos') return 'Download for macOS';
@@ -83,6 +110,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   href,
   kind,
   platform,
+  browser,
   download,
   children,
   className,
@@ -92,7 +120,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 }) => {
   const labelText = React.Children.count(children)
     ? undefined
-    : defaultLabel(kind, platform);
+    : defaultLabel(kind, platform, browser);
 
   const ariaLabel = labelText || undefined;
   const content = React.Children.count(children) ? children : labelText;
@@ -101,7 +129,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 
   return (
     <a
-      className={clsx('not-prose', baseClasses, colorClasses(kind, platform), className)}
+      className={clsx('not-prose', baseClasses, colorClasses(kind, platform, browser), className)}
       href={href}
       download={download}
       aria-label={ariaLabel}
@@ -109,7 +137,7 @@ const IconButton: React.FC<IconButtonProps> = ({
       target={target}
       rel={finalRel}
     >
-      {pickIcon(kind, platform)}
+      {pickIcon(kind, platform, browser)}
       <span className="leading-none">{content}</span>
     </a>
   );
@@ -128,6 +156,7 @@ type MarkdownAnyProps = {
   download?: string | boolean; // "" or "true" => true
   os?: Platform; // for <download os="windows" href="..."/>
   platform?: Platform; // alternative attribute name
+  browser?: Browser; // for <btn kind="browser" browser="firefox" href="..."/>
   kind?: Kind;
   children?: React.ReactNode;
 };
@@ -147,6 +176,7 @@ export const IconButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
     href={props.href}
     kind={props.kind}
     platform={props.platform || props.os}
+    browser={props.browser}
     download={toBool(props.download)}
     className={props.className}
     title={props.title}
@@ -251,6 +281,35 @@ export const LinuxButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
     className={props.className}
     title={props.title}
     target={props.target}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
+// Convenience tags for browser-specific links: <firefox href="...">, <chrome href="...">
+export const FirefoxButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="browser"
+    browser="firefox"
+    className={props.className}
+    title={props.title}
+    target={props.target || '_blank'}
+    rel={props.rel}
+  >
+    {props.children}
+  </IconButton>
+);
+
+export const ChromeButtonMarkdown: React.FC<MarkdownAnyProps> = (props) => (
+  <IconButton
+    href={props.href}
+    kind="browser"
+    browser="chrome"
+    className={props.className}
+    title={props.title}
+    target={props.target || '_blank'}
     rel={props.rel}
   >
     {props.children}

@@ -10,6 +10,8 @@ import {
   WindowsButtonMarkdown,
   MacosButtonMarkdown,
   LinuxButtonMarkdown,
+  FirefoxButtonMarkdown,
+  ChromeButtonMarkdown,
 } from '../components/IconButton';
 import { FaEnvelope } from 'react-icons/fa';
 import resumeData from '../data/resume.json';
@@ -29,6 +31,8 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
     windows: WindowsButtonMarkdown,
     macos: MacosButtonMarkdown,
     linux: LinuxButtonMarkdown,
+    firefox: FirefoxButtonMarkdown,
+    chrome: ChromeButtonMarkdown,
     // <highlight title="Optional" shadow>Content</highlight>
     highlight: HighlightMarkdown,
     // <email href="custom@domain.com">Label</email>

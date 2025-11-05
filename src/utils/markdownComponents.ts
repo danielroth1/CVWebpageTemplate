@@ -12,6 +12,8 @@ import {
 	MacosButtonMarkdown,
 	LinuxButtonMarkdown,
 	WebsiteButtonMarkdown,
+	FirefoxButtonMarkdown,
+	ChromeButtonMarkdown,
 } from '../components/IconButton';
 import { FaEnvelope } from 'react-icons/fa';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -148,6 +150,8 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
 		windows: WindowsButtonMarkdown,
 		macos: MacosButtonMarkdown,
 		linux: LinuxButtonMarkdown,
+		firefox: FirefoxButtonMarkdown,
+		chrome: ChromeButtonMarkdown,
 		// <highlight title="Optional" shadow>Content</highlight>
 		highlight: HighlightMarkdown,
 		// <email href="custom@domain.com">Label</email>
