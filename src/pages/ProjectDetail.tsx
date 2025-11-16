@@ -99,7 +99,7 @@ const ProjectDetail: React.FC = () => {
             ) : (
                 <>
                     {/* Top navigation: Previous / Next controls */}
-                    <div className="mb-4 top-12 z-40 sticky lg:relative lg:top-0 flex items-center justify-between gap-3">
+                    <div className="mb-4 top-12 z-40 sticky lg:relative md:top-0 flex items-center justify-between gap-3">
                         {prevProject ? (
                             <Link
                                 to={prevProject.link}
