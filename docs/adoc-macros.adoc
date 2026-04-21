@@ -1,0 +1,155 @@
+= AsciiDoc Macro Quick Reference
+// Short cheat-sheet — keep this file concise.
+
+== Inline (inside text)
+
+[cols="2,3",options="header"]
+|===
+| Syntax | Result
+
+| `skill:React[]`
+| Coloured skill badge
+
+| `email:[]`
+| Email button (address from resume.json)
+
+| `email:[href="x@y.com",text="Label"]`
+| Email button with explicit address
+|===
+
+== Buttons (one per line)
+
+[cols="2,3",options="header"]
+|===
+| Syntax | Result
+
+| `github::[href="…",text="…"]`
+| GitHub button
+
+| `download::[href="…",text="…"]`
+| Download button
+
+| `website::[href="…",text="…"]`
+| External website button
+
+| `linkedin::[href="…",text="…"]`
+| LinkedIn button
+
+| `linux::[href="…",text="…"]`
+| Linux download
+
+| `windows::[href="…",text="…"]`
+| Windows download
+
+| `macos::[href="…",text="…"]`
+| macOS download
+
+| `firefox::[href="…",text="…"]`
+| Firefox add-on
+
+| `chrome::[href="…",text="…"]`
+| Chrome extension
+
+| `btn::[href="…",icon="FaDownload",text="…"]`
+| Custom button with any react-icon
+|===
+
+== Media
+
+[cols="2,3",options="header"]
+|===
+| Syntax | Result
+
+| `youtube::ID[title="…",width=800]`
+| YouTube embed
+
+| `webm::./clip.mp4[max-width=600]`
+| Local video
+
+| `webm::./clip.mp4[max-width=600,start=2.5]`
+| Video starting at 2.5 s
+
+| `webm::./loop.webm[autoplay,auto-loop]`
+| Silent looping autoplay
+
+| `webm::./clip.mp4[controls=false]`
+| Video without controls bar
+
+| `webm::./clip.mp4[poster=./thumb.jpg]`
+| Video with thumbnail
+|===
+
+== Highlight box
+
+Rich content (use passthrough block):
+
+[source,asciidoc]
+----
+++++
+<highlight title="Note" shadow>
+Any content here, including <skill>badges</skill>.
+</highlight>
+++++
+----
+
+Plain text only:
+
+[source,asciidoc]
+----
+highlight::[title="Note",text="Short message.",shadow]
+----
+
+== Images
+
+[source,asciidoc]
+----
+image::./screenshot.png[Alt text,800]
+
+++++
+<img src="./screenshot.png" width="800" />
+++++
+----
+
+Both syntaxes resolve paths relative to the `.adoc` file.
+
+== Passthrough block (raw HTML)
+
+Identical to Markdown — use `++++` for any tag or combination:
+
+[source,asciidoc]
+----
+++++
+<github href="https://github.com/…">View on GitHub</github>
+<skill>TypeScript</skill>
+++++
+----
+
+== AsciiDoc admonitions (no Markdown equivalent)
+
+[source,asciidoc]
+----
+NOTE: Neutral info.
+TIP: Best-practice hint.
+IMPORTANT: Must-read item.
+WARNING: Something may go wrong.
+CAUTION: Proceed carefully.
+----
+
+== Useful document header attributes
+
+[source,asciidoc]
+----
+= Title
+:toc: left          <1>
+:sectnums:          <2>
+:toclevels: 3       <3>
+:icons: font        <4>
+----
+<1> Inline TOC on the left
+<2> Auto-number sections (1, 1.1, 1.1.1 …)
+<3> How deep the TOC goes
+<4> Admonition icons
+
+'''
+
+For full details and the ERP Demo docs system, see link:authoring-guide.adoc[authoring-guide.adoc].

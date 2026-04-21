@@ -6,6 +6,8 @@ import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Resume from './pages/Resume';
 import Contact from './pages/Contact';
+import ErpDocsLanding from './pages/ErpDocsLanding';
+import ErpDocPage from './pages/ErpDocPage';
 import AppLayout from './layouts/AppLayout';
 import HomeLayout from './layouts/HomeLayout';
 
@@ -24,6 +26,9 @@ const AppRoutes: React.FC = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/contact" element={<Contact />} />
+            {/* ERP Documentation */}
+            <Route path="/erp-docs" element={<ErpDocsLanding />} />
+            <Route path="/erp-docs/:slug" element={<ErpDocPage />} />
         </Route>
     </Routes>
 );

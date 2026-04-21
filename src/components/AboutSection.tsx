@@ -4,10 +4,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import loadMarkdown from '../utils/markdownLoader';
+import { loadAndConvertAdoc } from '../utils/asciidocLoader';
 import { SkillBadgeMarkdown } from './SkillBadge';
 import { useMarkdownComponents } from '../utils/markdownComponents';
+import AsciidocRenderer from '../utils/asciidocRenderer';
 
+// Set to 'data/ABOUT_ME.adoc' to use AsciiDoc instead of Markdown
 const ABOUT_PATH = 'data/ABOUT_ME.md';
+const isAdoc = (p: string) => /\.adoc$/i.test(p);
 
 export type AboutSectionProps = {
   showTitle?: boolean;
@@ -38,21 +42,23 @@ function extractHighlights(markdown: string, max = 3): string[] {
 
 const AboutSection: React.FC<AboutSectionProps> = ({ showTitle = false, className }) => {
   const [md, setMd] = React.useState<string>('');
+  const [adocHtml, setAdocHtml] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(true);
+  const docIsAdoc = isAdoc(ABOUT_PATH);
 
   React.useEffect(() => {
     let mounted = true;
     (async () => {
-      const text = await loadMarkdown(ABOUT_PATH);
-      if (mounted) {
-        setMd(text);
-        setLoading(false);
+      if (docIsAdoc) {
+        const html = await loadAndConvertAdoc(ABOUT_PATH);
+        if (mounted) { setAdocHtml(html); setLoading(false); }
+      } else {
+        const text = await loadMarkdown(ABOUT_PATH);
+        if (mounted) { setMd(text); setLoading(false); }
       }
     })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return () => { mounted = false; };
+  }, [docIsAdoc]);
 
   const markdownComponents = useMarkdownComponents(ABOUT_PATH);
   const highlights = md ? extractHighlights(md, 3) : [];
@@ -82,7 +88,17 @@ const AboutSection: React.FC<AboutSectionProps> = ({ showTitle = false, classNam
       )} */}
   <div>
         {loading && <p className="text-gray-500">Loading…</p>}
-        {!loading && md && (
+        {!loading && docIsAdoc && adocHtml && (
+          <div className="max-w-4xl">
+            <div
+              className="prose prose-sm sm:prose lg:prose-lg max-w-none w-full dark:prose-invert markdown-wide"
+              style={{ maxWidth: 'none' }}
+            >
+              <AsciidocRenderer html={adocHtml} originPath={ABOUT_PATH} className="adoc-content" />
+            </div>
+          </div>
+        )}
+        {!loading && !docIsAdoc && md && (
           <div className="max-w-4xl">
             <div
               className="prose prose-sm sm:prose lg:prose-lg max-w-none w-full dark:prose-invert markdown-wide"

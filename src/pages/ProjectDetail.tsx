@@ -2,16 +2,20 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import projectsData from '../data/projects.json';
 import loadMarkdown, { getMarkdownAssetUrl } from '../utils/markdownLoader';
+import { loadAndConvertAdoc } from '../utils/asciidocLoader';
 import loadCloc from '../utils/clocLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import SkillBadge from '../components/SkillBadge';
 import { useMarkdownComponents } from '../utils/markdownComponents';
+import AsciidocRenderer from '../utils/asciidocRenderer';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 import useWindowSize from '../hooks/useWindowSize';
 import { getProjectDateDisplay } from '../utils/dates';
+
+const isAdoc = (url?: string) => /\.adoc$/i.test(url ?? '');
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,17 +33,16 @@ const ProjectDetail: React.FC = () => {
         return { prevProject: prev, nextProject: next };
     }, [project]);
 
-    // Shared markdown components mapping
-
     const [md, setMd] = React.useState<string>('');
+    const [adocHtml, setAdocHtml] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
     const [cloc, setCloc] = React.useState<any | null>(null);
     const markdownUrl = project?.markdownUrl;
-    // derive cloc.json path from markdown or project folder: expect cloc at src/data/projects/<Folder>/cloc.json
+    const docIsAdoc = isAdoc(markdownUrl);
+    // derive cloc.json path: replace README.md / README.adoc with cloc.json
     const clocUrl = React.useMemo(() => {
         if (!project?.markdownUrl) return undefined;
-        // markdownUrl is like 'src/data/projects/CAE/README.md' => replace README.md with cloc.json
-        return project.markdownUrl.replace(/README\.md$/i, 'cloc.json');
+        return project.markdownUrl.replace(/README\.(md|adoc)$/i, 'cloc.json');
     }, [project]);
 
     // Scroll to top whenever this detail page mounts or the project id changes
@@ -58,17 +61,17 @@ const ProjectDetail: React.FC = () => {
         async function run() {
             if (!markdownUrl) return;
             setLoading(true);
-            const text = await loadMarkdown(markdownUrl);
-            if (mounted) {
-                setMd(text);
-                setLoading(false);
+            if (docIsAdoc) {
+                const html = await loadAndConvertAdoc(markdownUrl);
+                if (mounted) { setAdocHtml(html); setLoading(false); }
+            } else {
+                const text = await loadMarkdown(markdownUrl);
+                if (mounted) { setMd(text); setLoading(false); }
             }
         }
         run();
-        return () => {
-            mounted = false;
-        };
-    }, [markdownUrl]);
+        return () => { mounted = false; };
+    }, [markdownUrl, docIsAdoc]);
 
     React.useEffect(() => {
         let mounted = true;
@@ -156,7 +159,14 @@ const ProjectDetail: React.FC = () => {
 
                                 <div className="order-2 lg:order-1 prose prose-sm sm:prose lg:prose-lg flex-1 dark:prose-invert markdown-wide">
                                     {loading && <p className="text-[var(--color-text-muted)]">Loading details…</p>}
-                                    {!loading && md && (
+                                    {!loading && docIsAdoc && adocHtml && (
+                                        <AsciidocRenderer
+                                            html={adocHtml}
+                                            originPath={markdownUrl}
+                                            className="adoc-content"
+                                        />
+                                    )}
+                                    {!loading && !docIsAdoc && md && (
                                         <ReactMarkdown
                                             remarkPlugins={[remarkGfm]}
                                             rehypePlugins={[rehypeRaw]}
@@ -165,7 +175,7 @@ const ProjectDetail: React.FC = () => {
                                             {md}
                                         </ReactMarkdown>
                                     )}
-                                    {!loading && !md && (
+                                    {!loading && !docIsAdoc && !md && (
                                         <p className="text-[var(--color-text-muted)]">{project.description}</p>
                                     )}
                                 </div>
