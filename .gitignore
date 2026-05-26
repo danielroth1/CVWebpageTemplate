@@ -67,7 +67,6 @@ ehthumbs.db
 
 # Editor directories and files
 .idea/
-.vscode/
 *.sublime-workspace
 *.sublime-project
 

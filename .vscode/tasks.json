@@ -1,0 +1,64 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "npm: dev",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "custom",
+				"pattern": {
+					"regexp": ".*"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^",
+					"endsPattern": "Compiled successfully|You can now view"
+				}
+			}
+		},
+		{
+			"label": "npm: dev",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": [
+				"$eslint-stylish"
+			]
+		},
+		{
+			"label": "typecheck",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "typecheck",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"group": "build"
+		},
+		{
+			"label": "typecheck",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"group": "build"
+		},
+		{
+			"label": "typecheck",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"group": "build"
+		},
+		{
+			"label": "typecheck",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"group": "build"
+		}
+	]
+}

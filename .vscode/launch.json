@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Firefox: Launch",
+      "type": "firefox",
+      "request": "launch",
+      "reAttach": true,
+      "url": "http://localhost:3002",
+      "webRoot": "${workspaceFolder}/src",
+      "pathMappings": [
+        {
+          "url": "http://localhost:3002/src",
+          "path": "${workspaceFolder}/src"
+        },
+        {
+          "url": "http://localhost:3002/src",
+          "path": "${workspaceFolder}/src"
+        },
+        {
+          "url": "webpack:///src",
+          "path": "${workspaceFolder}/src"
+        }
+      ],
+      "preLaunchTask": "npm: dev"
+    }
+  ]
+}
