@@ -1,0 +1,360 @@
+= Authoring Guide
+:toc: left
+:toclevels: 3
+:sectnums:
+
+This guide covers everything needed to write and publish content in this CV project:
+how to write project pages in AsciiDoc, how all custom macros work,
+and how the ERP Demo multi-page documentation system works.
+
+== Project pages (README.md / README.adoc)
+
+Each project entry in `projects.json` points to a `markdownUrl` file.
+That file can be either a `.md` or a `.adoc` file — the renderer detects the extension automatically.
+
+.projects.json example
+[source,json]
+----
+{
+  "id": "my-project",
+  "title": "My Project",
+  "markdownUrl": "src/data/projects/MyProject/README.adoc"
+}
+----
+
+Files live under `src/data/projects/<ProjectName>/`.
+
+=== Switching an existing project from Markdown to AsciiDoc
+
+. Create `src/data/projects/<ProjectName>/README.adoc` with AsciiDoc content.
+. Update `markdownUrl` in `src/data/projects.json` to end in `.adoc`.
+. Delete or keep the old `.md` file — it is no longer loaded.
+
+=== Other content files
+
+[cols="2,2,2",options="header"]
+|===
+| Content | Default file | How to switch to AsciiDoc
+
+| About page
+| `src/data/ABOUT_ME.md`
+| Set `ABOUT_PATH = 'data/ABOUT_ME.adoc'` in `src/components/AboutSection.tsx`
+
+| Contact page
+| `src/data/CONTACT.md`
+| Set `CONTACT_MD_PATH = 'data/CONTACT.adoc'` in `src/pages/Contact.tsx`
+|===
+
+== Writing AsciiDoc (.adoc)
+
+=== Document header
+
+[source,asciidoc]
+----
+= Project Title            <1>
+:toc: left                 <2>
+:toclevels: 3              <3>
+:sectnums:                 <4>
+:icons: font               <5>
+----
+<1> Document title — rendered as `<h1>` on the page
+<2> Inline table of contents (optional; styled by asciidoc.css)
+<3> TOC depth
+<4> Automatic section numbers
+<5> Icon font for admonition icons
+
+=== All supported custom macros
+
+See link:adoc-macros.adoc[adoc-macros.adoc] for a concise quick-reference card.
+
+The sections below give full details with all available options.
+
+==== skill — inline skill badge
+
+[source,asciidoc]
+----
+Implemented in skill:C++[] using skill:Qt[] for the UI.
+----
+
+The target between `skill:` and `[]` is the skill name.
+It renders with the same colour-coded badge as everywhere else on the site.
+
+==== Buttons — block macros
+
+Each macro occupies its own line.
+`href` is the URL, `text` is the visible label.
+
+[source,asciidoc]
+----
+github::[href="https://github.com/you/repo",text="View on GitHub"]
+download::[href="https://example.com/v1.zip",text="Download v1.0"]
+website::[href="https://example.com",text="Live Demo"]
+linkedin::[href="https://linkedin.com/in/you",text="View on LinkedIn"]
+
+linux::[href="https://example.com/app.AppImage",text="Download for Linux"]
+windows::[href="https://example.com/app.zip",text="Download for Windows"]
+macos::[href="https://example.com/app.dmg",text="Download for macOS"]
+
+firefox::[href="https://addons.mozilla.org/...",text="Get for Firefox"]
+chrome::[href="https://chrome.google.com/webstore/...",text="Get for Chrome"]
+----
+
+For a fully custom button with any react-icon:
+
+[source,asciidoc]
+----
+btn::[href="https://example.com",icon="FaDownload",text="Custom Label"]
+----
+
+==== email — email button (inline)
+
+[source,asciidoc]
+----
+Contact me: email:[]                                  <1>
+Or write to email:[href="hi@example.com",text="hi@example.com"] <2>
+----
+<1> Uses the address from `src/data/resume.json → profile.email`
+<2> Explicit address
+
+==== youtube — video embed
+
+[source,asciidoc]
+----
+youtube::VIDEO_ID[title="Demo",width=800]
+----
+
+`VIDEO_ID` is the 11-character YouTube ID from the URL.
+`width` is optional (defaults to full container width).
+
+==== webm — local video embed
+
+Paths are resolved relative to the `.adoc` file using the same Vite glob mechanism as Markdown.
+
+[source,asciidoc]
+----
+webm::./demo.mp4[max-width=600]                      <1>
+webm::./demo.mp4[max-width=600,start=2.5]            <2>
+webm::./loop.webm[max-width=400,autoplay,auto-loop]  <3>
+webm::./silent.mp4[max-width=600,controls=false]     <4>
+webm::./video.mp4[max-width=600,poster=./thumb.jpg]  <5>
+----
+<1> Basic embed; player controls shown by default
+<2> Jump to 2.5 s on load
+<3> Silent looping autoplay (muted automatically)
+<4> Hide the browser controls bar
+<5> Show thumbnail before playback
+
+If a `.min.mp4` / `.min.webm` compressed sibling exists (created by `npm run compress-videos`),
+it is preferred automatically.
+
+==== highlight — callout box
+
+For a box *with content*, use a passthrough block:
+
+[source,asciidoc]
+----
+++++
+<highlight title="Personal note" shadow>
+I built this to apply knowledge from my thesis.
+It uses <skill>C++</skill> and <skill>OpenGL</skill>.
+</highlight>
+++++
+----
+
+For a plain text label only (no rich content needed):
+
+[source,asciidoc]
+----
+highlight::[title="Note",text="This section is still a work in progress.",shadow]
+----
+
+==== Images
+
+Standard AsciiDoc image syntax works when the file is in the same directory:
+
+[source,asciidoc]
+----
+image::./screenshot.png[Screenshot,800]
+----
+
+For full width/height/style control identical to Markdown, use a passthrough block:
+
+[source,asciidoc]
+----
+++++
+<img src="./screenshot.png" width="1000" />
+++++
+----
+
+Both are resolved relative to the `.adoc` file via Vite's asset pipeline.
+
+==== Passthrough blocks — raw HTML
+
+Any custom HTML tag that works in Markdown also works in a `++++` block:
+
+[source,asciidoc]
+----
+++++
+<github href="https://github.com/you/repo">View on GitHub</github>
+<skill>React</skill> <skill>TypeScript</skill>
+<webm src="./demo.mp4" max-width="600" start="2"></webm>
+++++
+----
+
+Use passthrough blocks when you need to combine multiple components on one line
+or when you need rich nested HTML that the macro syntax cannot express.
+
+=== AsciiDoc-only features (not available in Markdown)
+
+These render correctly in the site and require no extra configuration:
+
+.Admonitions
+[source,asciidoc]
+----
+NOTE: Neutral informational note.
+TIP: A best-practice hint.
+IMPORTANT: The reader must pay attention to this.
+WARNING: Something could go wrong.
+CAUTION: Proceed carefully.
+----
+
+.Code block with language label
+[source,asciidoc]
+....
+[source,typescript]
+----
+const greet = (name: string) => `Hello, ${name}!`;
+----
+....
+
+.Table
+[source,asciidoc]
+----
+[cols="1,2,1",options="header"]
+|===
+| Column A | Column B | Column C
+| cell     | cell     | cell
+|===
+----
+
+.Blockquote with attribution
+[source,asciidoc]
+----
+[quote,Donald Knuth]
+____
+Premature optimisation is the root of all evil.
+____
+----
+
+.Description list
+[source,asciidoc]
+----
+Term A:: Definition of term A.
+Term B:: Definition of term B.
+----
+
+== ERP Demo documentation system
+
+The ERP Demo uses a separate *multi-page* documentation viewer, independent of the single-README project pages.
+
+=== File layout
+
+----
+src/data/
+  erp-docs.json                          ← ordered TOC definition
+  projects/
+    ERPDemo/
+      README.md                          ← project card overview (/projects page)
+      docs/
+        introduction.md
+        architecture-overview.md
+        backend.md
+        api-endpoints.md
+        database-schema.md
+        frontend.md
+        deployment.md
+        kubernetes-setup.md
+----
+
+=== erp-docs.json — TOC definition
+
+The file is an ordered JSON array. Each entry becomes one page in the documentation viewer.
+
+[source,json]
+----
+[
+  { "slug": "introduction",          "title": "Introduction",          "level": 1 },
+  { "slug": "architecture-overview", "title": "Architecture Overview", "level": 1 },
+  { "slug": "backend",               "title": "Backend",               "level": 2 },
+  { "slug": "api-endpoints",         "title": "API Endpoints",         "level": 3 },
+  { "slug": "database-schema",       "title": "Database Schema",       "level": 3 },
+  { "slug": "frontend",              "title": "Frontend",              "level": 2 },
+  { "slug": "deployment",            "title": "Deployment",            "level": 1 },
+  { "slug": "kubernetes-setup",      "title": "Kubernetes Setup",      "level": 2 }
+]
+----
+
+`slug`:: File name without extension; maps to `docs/<slug>.md`.
+`title`:: Displayed in the sidebar and as the in-page section heading.
+`level`:: Depth in the TOC hierarchy. `1` = top-level chapter, `2` = section, `3` = sub-section. The system derives numbers like `1`, `2.1`, `2.1.3` automatically.
+
+The *order* of entries defines reading order and prev/next navigation.
+
+=== Adding a new page
+
+. Create the Markdown file:
++
+----
+src/data/projects/ERPDemo/docs/<your-slug>.md
+----
+
+. Insert an entry at the desired position in `erp-docs.json`:
++
+[source,json]
+----
+{ "slug": "your-slug", "title": "Your Page Title", "level": 2 }
+----
+
+The TOC, section numbers, and navigation links update automatically — no code changes required.
+
+=== Converting ERP docs pages to AsciiDoc
+
+The ERP docs loader currently always appends `.md`.
+To support `.adoc` pages, make the following change in `src/utils/erpDocs.ts`:
+
+. Add an optional `ext` field to the JSON entries you want to convert:
++
+[source,json]
+----
+{ "slug": "architecture-overview", "title": "Architecture Overview", "level": 1, "ext": "adoc" }
+----
+
+. Update `buildErpDocsToc()` in `src/utils/erpDocs.ts`:
++
+[source,typescript]
+----
+const ext = (entry as any).ext ?? 'md';
+return {
+  ...entry,
+  number,
+  markdownUrl: `src/data/projects/ERPDemo/docs/${entry.slug}.${ext}`,
+};
+----
+
+. In `src/pages/ErpDocPage.tsx`, branch on the file extension when loading:
++
+[source,typescript]
+----
+import { loadAndConvertAdoc } from '../utils/asciidocLoader';
+import AsciidocRenderer from '../utils/asciidocRenderer';
+
+const docIsAdoc = markdownUrl?.endsWith('.adoc') ?? false;
+// load:
+const content = docIsAdoc
+  ? await loadAndConvertAdoc(markdownUrl)
+  : await loadMarkdown(markdownUrl);
+// render:
+{docIsAdoc
+  ? <AsciidocRenderer html={content} originPath={markdownUrl} className="adoc-content" />
+  : <ReactMarkdown ...>{content}</ReactMarkdown>}
+----

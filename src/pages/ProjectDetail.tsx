@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import projectsData from '../data/projects.json';
-import { loadDocumentation, getMarkdownAssetUrl } from '../utils/markdownLoader';
+import loadMarkdown from '../utils/markdownLoader';
+import { loadAndConvertAdoc } from '../utils/asciidocLoader';
 import loadCloc from '../utils/clocLoader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -9,39 +10,42 @@ import rehypeRaw from 'rehype-raw';
 import SkillBadge from '../components/SkillBadge';
 import { useMarkdownComponents } from '../utils/markdownComponents';
 import { useEnsureImageViewerClass } from '../utils/imageViewerRenderers';
+import AsciidocRenderer from '../utils/asciidocRenderer';
 import CodeStats from '../components/CodeStats';
 import clocLanguageMapping from '../data/cloc-mapping.json';
 import useWindowSize from '../hooks/useWindowSize';
 import { getProjectDateDisplay } from '../utils/dates';
+import type { Project, ProjectsData } from '../types';
+
+const isAdoc = (url?: string) => /\.adoc$/i.test(url ?? '');
 
 const ProjectDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const project = projectsData.projects.find((p) => p.id === id);
+    const projectList = (projectsData as ProjectsData).projects;
+    const project = projectList.find((projectEntry: Project) => projectEntry.id === id);
     const skills = project?.skills ?? [];
     const dateDisplay = project ? getProjectDateDisplay(project) : null;
 
     // Determine next/previous projects based on the ordering in projects.json
     const { prevProject, nextProject } = React.useMemo(() => {
-        if (!project) return { prevProject: null as any, nextProject: null as any };
-        const list = projectsData.projects;
-        const idx = list.findIndex((p) => p.id === project.id);
-        const prev = idx > 0 ? list[idx - 1] : null;
-        const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
+        if (!project) {
+            return { prevProject: null as Project | null, nextProject: null as Project | null };
+        }
+        const idx = projectList.findIndex((projectEntry: Project) => projectEntry.id === project.id);
+        const prev = idx > 0 ? projectList[idx - 1] : null;
+        const next = idx >= 0 && idx < projectList.length - 1 ? projectList[idx + 1] : null;
         return { prevProject: prev, nextProject: next };
-    }, [project]);
-
-    // Shared markdown components mapping
+    }, [project, projectList]);
 
     const [md, setMd] = React.useState<string>('');
+    const [adocHtml, setAdocHtml] = React.useState<string>('');
     const [loading, setLoading] = React.useState<boolean>(false);
     const [cloc, setCloc] = React.useState<any | null>(null);
     const docUrl = project?.docUrl || project?.markdownUrl;
-    // derive cloc.json path from docUrl or project folder: expect cloc at src/data/projects/<Folder>/cloc.json
+    const docIsAdoc = isAdoc(docUrl);
     const clocUrl = React.useMemo(() => {
         if (!docUrl) return undefined;
-        // Handle both .md and .adoc/.asciidoc files
-        const cleanedUrl = docUrl.replace(/README\.(md|adoc|asciidoc)$/i, 'cloc.json');
-        return cleanedUrl;
+        return docUrl.replace(/README\.(md|adoc|asciidoc)$/i, 'cloc.json');
     }, [docUrl]);
 
     // Scroll to top whenever this detail page mounts or the project id changes
@@ -60,17 +64,17 @@ const ProjectDetail: React.FC = () => {
         async function run() {
             if (!docUrl) return;
             setLoading(true);
-            const text = await loadDocumentation(docUrl);
-            if (mounted) {
-                setMd(text);
-                setLoading(false);
+            if (docIsAdoc) {
+                const html = await loadAndConvertAdoc(docUrl);
+                if (mounted) { setAdocHtml(html); setLoading(false); }
+            } else {
+                const text = await loadMarkdown(docUrl);
+                if (mounted) { setMd(text); setLoading(false); }
             }
         }
         run();
-        return () => {
-            mounted = false;
-        };
-    }, [docUrl]);
+        return () => { mounted = false; };
+    }, [docUrl, docIsAdoc]);
 
     React.useEffect(() => {
         let mounted = true;
@@ -138,7 +142,7 @@ const ProjectDetail: React.FC = () => {
 
                     {skills.length ? (
                         <div className="mb-4 flex flex-wrap gap-2">
-                            {skills.map((skill) => (
+                            {skills.map((skill: string) => (
                                 <SkillBadge key={skill}>{skill}</SkillBadge>
                             ))}
                         </div>
@@ -163,7 +167,14 @@ const ProjectDetail: React.FC = () => {
                                     className="order-2 lg:order-1 prose prose-sm sm:prose lg:prose-lg flex-1 dark:prose-invert markdown-wide max-w-full overflow-hidden"
                                 >
                                     {loading && <p className="text-[var(--color-text-muted)]">Loading details…</p>}
-                                    {!loading && md && (
+                                    {!loading && docIsAdoc && adocHtml && (
+                                        <AsciidocRenderer
+                                            html={adocHtml}
+                                            originPath={docUrl}
+                                            className="adoc-content"
+                                        />
+                                    )}
+                                    {!loading && !docIsAdoc && md && (
                                         <ReactMarkdown
                                             remarkPlugins={[remarkGfm]}
                                             rehypePlugins={[rehypeRaw]}
@@ -172,7 +183,7 @@ const ProjectDetail: React.FC = () => {
                                             {md}
                                         </ReactMarkdown>
                                     )}
-                                    {!loading && !md && (
+                                    {!loading && !(docIsAdoc ? adocHtml : md) && (
                                         <p className="text-[var(--color-text-muted)]">{project.description}</p>
                                     )}
                                 </div>
