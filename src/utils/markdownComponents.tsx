@@ -10,6 +10,7 @@ import {
   WindowsButtonMarkdown,
   MacosButtonMarkdown,
   LinuxButtonMarkdown,
+  WebsiteButtonMarkdown,
   FirefoxButtonMarkdown,
   ChromeButtonMarkdown,
 } from '../components/IconButton';
@@ -31,6 +32,7 @@ export function createMarkdownComponents(originPath: string): MarkdownComponents
     windows: WindowsButtonMarkdown,
     macos: MacosButtonMarkdown,
     linux: LinuxButtonMarkdown,
+    website: WebsiteButtonMarkdown,
     firefox: FirefoxButtonMarkdown,
     chrome: ChromeButtonMarkdown,
     // <highlight title="Optional" shadow>Content</highlight>

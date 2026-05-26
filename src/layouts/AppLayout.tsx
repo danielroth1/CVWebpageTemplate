@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import NavigationBar from '../components/NavigationBar';
+import BurgerMenu from '../components/BurgerMenu';
 
 /**
  * AppLayout
@@ -11,7 +11,7 @@ const AppLayout: React.FC = () => {
   return (
     <div className="w-full">
       {/* Global mobile nav (sticky at top on small screens) */}
-      <NavigationBar />
+      <BurgerMenu />
       {/* Route content */}
       <Outlet />
     </div>

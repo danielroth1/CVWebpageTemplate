@@ -1,0 +1,4 @@
+{"id":"1778792502642218","taskName":"typecheck","taskSource":"Workspace","scope":"CVWebpageTemplate","definitionType":"shell","startTime":1778792502642,"status":"Failed","endTime":1778792505044,"exitCode":2,"duration":2402}
+{"id":"1779039969091740","taskName":"build","taskSource":"npm","scope":"CVWebpageTemplate","definitionType":"npm","startTime":1779039969091,"status":"Success","endTime":1779039974586,"exitCode":0,"duration":5495}
+{"id":"1779209231104122","taskName":"build","taskSource":"npm","scope":"CVWebpageTemplate","definitionType":"npm","startTime":1779209231104,"status":"Success","endTime":1779209236902,"exitCode":0,"duration":5798}
+{"id":"1779209244813504","taskName":"deploy","taskSource":"Workspace","scope":"CVWebpageTemplate","definitionType":"shell","startTime":1779209244813,"status":"Success","endTime":1779209317442,"exitCode":0,"duration":72629}

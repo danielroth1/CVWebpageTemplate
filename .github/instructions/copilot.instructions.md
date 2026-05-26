@@ -167,6 +167,16 @@ btn::[href="…",icon="FaDownload",text="Label"]
 highlight::[title="…",text="…",shadow]
 ```
 
+**Highlight block** — wraps `skill:Name[]` badges (or arbitrary content) in a highlight box:
+
+```asciidoc
+[highlight,title="Tech Stack",shadow]
+====
+skill::React[]
+skill::TypeScript[]
+====
+```
+
 **Passthrough blocks** — raw HTML, identical to Markdown usage:
 
 ```asciidoc

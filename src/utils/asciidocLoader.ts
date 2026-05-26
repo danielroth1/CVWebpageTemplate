@@ -16,6 +16,9 @@
  *     email:[href="x@y.com"]           → email button (leave empty for resume default)
  *
  *   BLOCK MACROS (standalone line):
+ *     skill::[text="React"]            → <skill> badge
+ *
+ *   BLOCK MACROS (standalone line):
  *     youtube::VIDEO_ID[title="...",width=800]
  *     webm::./clip.mp4[max-width=600,start=2,autoplay,auto-loop]
  *     github::[href="https://...",text="View on GitHub"]
@@ -28,8 +31,11 @@
  *     website::[href="https://...",text="Visit Website"]
  *     linkedin::[href="https://...",text="View on LinkedIn"]
  *     btn::[icon="FaDownload",href="https://...",text="Label"]
- *     highlight::[title="Note",shadow=true]
- *       Content goes here...
+ *     highlight::[title="Note",shadow]
+ *     [highlight,title="Tech Stack",shadow]
+ *     ====
+ *     skill::React[]
+ *     skill::TypeScript[]
  *     ====
  *
  *   DOT / GRAPHVIZ INLINE BLOCK (delimited block with [graphviz] style):
@@ -212,6 +218,15 @@ function buildRegistry(asciidoctor: any, originPath = ''): any {
     return self.createBlock(parent, 'pass', html);
   }
 
+  // skill::[text="React"]
+  reg.blockMacro('skill', function (this: any) {
+    const self = this;
+    this.process(function (parent: any, target: string, attrs: any) {
+      const text = attrs['text'] || attrs[1] || target || '';
+      return blockMacroHtml(self, parent, `<skill>${escAttr(text)}</skill>`);
+    });
+  });
+
   // youtube::VIDEO_ID[title="...",width=800]
   reg.blockMacro('youtube', function (this: any) {
     const self = this;
@@ -332,10 +347,6 @@ function buildRegistry(asciidoctor: any, originPath = ''): any {
   });
 
   // highlight::[title="Note",shadow]  (single block macro, no content)
-  // For a highlight WITH content, use a passthrough block instead:
-  //   ++++
-  //   <highlight title="Note" shadow>content here</highlight>
-  //   ++++
   reg.blockMacro('highlight', function (this: any) {
     const self = this;
     this.process(function (parent: any, _target: string, attrs: any) {
@@ -343,6 +354,35 @@ function buildRegistry(asciidoctor: any, originPath = ''): any {
       const shadow = (attrs['shadow'] != null && attrs['shadow'] !== 'false') ? ' shadow' : '';
       const content = attrs['text'] || attrs[1] || '';
       return blockMacroHtml(self, parent, `<highlight title="${escAttr(title)}"${shadow}>${escAttr(content)}</highlight>`);
+    });
+  });
+
+  // [highlight,title="Tech Stack",shadow]
+  // ====
+  // skill::React[]
+  // skill::TypeScript[]
+  // ====
+  // Supports both skill::Name[] (block macro form) and skill:Name[] (inline form).
+  // reg.blockMacro cannot be used here because blockMacros are leaf nodes (no body);
+  // the ==== delimited form requires a reg.block() compound-block extension.
+  // The registered reg.blockMacro('skill') won't fire inside this block because
+  // we receive raw unprocessed source lines from the reader, so we match via regex.
+  reg.block('highlight', function (this: any) {
+    const self = this;
+    this.onContext(['example', 'open']);
+    this.process(function (parent: any, reader: any, attrs: any) {
+      const title = attrs['title'] || '';
+      const shadow = (attrs['shadow'] != null && attrs['shadow'] !== 'false') ? ' shadow' : '';
+      const lines: string[] = reader.readLines
+        ? reader.readLines()
+        : (reader.getLines ? reader.getLines() : []);
+      const innerHtml = lines
+        .map(line => line.replace(/\bskill::?([^\[]+)\[\]/g, (_: string, name: string) => `<skill>${escAttr(name.trim())}</skill>`))
+        .filter(line => line.trim() !== '')
+        .join('\n');
+      return self.createBlock(parent, 'pass',
+        `<highlight title="${escAttr(title)}"${shadow}>${innerHtml}</highlight>`,
+      );
     });
   });
 
@@ -394,6 +434,46 @@ async function getAsciidoctor(): Promise<any> {
   return _asciidoctor;
 }
 
+// ---------------------------------------------------------------------------
+// Syntax highlighting — applied to converted HTML before returning
+// ---------------------------------------------------------------------------
+
+/** highlight.js module, loaded lazily */
+let _hljs: any = null;
+async function getHljs(): Promise<any> {
+  if (_hljs) return _hljs;
+  const mod = await import('highlight.js');
+  _hljs = mod.default;
+  return _hljs;
+}
+
+/**
+ * Walk `<code class="language-xxx">` blocks in an HTML string and apply
+ * highlight.js colouring.  Works on the raw HTML string via regex so we
+ * don't need a DOM — Vite SSR-safe and works at build time.
+ */
+async function highlightCodeBlocks(html: string): Promise<string> {
+  const hljs = await getHljs();
+  return html.replace(
+    /<code class="language-([^"]+)"[^>]*>([\s\S]*?)<\/code>/g,
+    (_match, lang: string, code: string) => {
+      // Decode HTML entities Asciidoctor encodes in the source
+      const decoded = code
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      const alias = lang.toLowerCase();
+      if (hljs.getLanguage(alias)) {
+        const result = hljs.highlight(decoded, { language: alias, ignoreIllegals: true });
+        return `<code class="language-${lang} hljs">${result.value}</code>`;
+      }
+      return _match;
+    },
+  );
+}
+
 /**
  * Convert raw AsciiDoc text to an HTML string.
  *
@@ -416,7 +496,8 @@ export async function adocToHtml(adocText: string, originPath?: string): Promise
         sectids: '',
       },
     });
-    return typeof html === 'string' ? html : '';
+    const raw = typeof html === 'string' ? html : '';
+    return raw ? await highlightCodeBlocks(raw) : '';
   } catch (e) {
     console.warn('Failed to convert adoc to HTML:', e);
     return '';

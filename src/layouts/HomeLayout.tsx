@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import HeroHeader from '../components/HeroHeader';
-import NavigationBar from '../components/NavigationBar';
+import BurgerMenu from '../components/BurgerMenu';
 
 /**
  * HomeLayout
@@ -12,7 +12,7 @@ const HomeLayout: React.FC = () => {
   return (
     <div className="w-full">
       <HeroHeader />
-      <NavigationBar />
+      <BurgerMenu />
       <Outlet />
     </div>
   );

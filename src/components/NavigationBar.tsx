@@ -1,3 +1,7 @@
+// NavigationBar is kept for reference but replaced by BurgerMenu.
+// Uncomment and swap imports/usages in AppLayout + HomeLayout to restore it.
+
+/*
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FaHome, FaProjectDiagram, FaEnvelopeOpenText } from 'react-icons/fa';
@@ -48,3 +52,4 @@ const NavigationBar: React.FC = () => {
 };
 
 export default NavigationBar;
+*/

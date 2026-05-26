@@ -6,15 +6,15 @@
       "type": "firefox",
       "request": "launch",
       "reAttach": true,
-      "url": "http://localhost:3002",
+      "url": "http://localhost:3001",
       "webRoot": "${workspaceFolder}/src",
       "pathMappings": [
         {
-          "url": "http://localhost:3002/src",
+          "url": "http://localhost:3001/src",
           "path": "${workspaceFolder}/src"
         },
         {
-          "url": "http://localhost:3002/src",
+          "url": "http://localhost:3001/src",
           "path": "${workspaceFolder}/src"
         },
         {

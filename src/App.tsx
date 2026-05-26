@@ -3,7 +3,6 @@ import { ThemeProvider } from './hooks/ThemeContext';
 import { HashRouter } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import NavigationBar from './components/NavigationBar';
 import Footer from './components/Footer';
 import AppRoutes from './routes';
 import './styles/globals.css';

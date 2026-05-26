@@ -20,7 +20,7 @@ export const Highlight: React.FC<HighlightProps> = ({ title, shadow, className, 
     'border-blue-300 dark:border-blue-500',
     // Light: a bit darker than white; Dark: a bit lighter than default dark bg
     'bg-blue-50 dark:bg-blue-900/30',
-    'p-4',
+    'mt-4 p-4',
   ];
   if (shadow) base.push('shadow-md');
 
