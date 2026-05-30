@@ -6,10 +6,11 @@ import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Resume from './pages/Resume';
 import Contact from './pages/Contact';
-import ErpDocsLanding from './pages/ErpDocsLanding';
-import ErpDocPage from './pages/ErpDocPage';
+import DocsLanding from './pages/DocsLanding';
+import DocsPage from './pages/DocsPage';
 import AppLayout from './layouts/AppLayout';
 import HomeLayout from './layouts/HomeLayout';
+import { projectDocsList } from './utils/docsLoader';
 
 const AppRoutes: React.FC = () => (
     <Routes>
@@ -26,9 +27,13 @@ const AppRoutes: React.FC = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/contact" element={<Contact />} />
-            {/* ERP Documentation */}
-            <Route path="/erp-docs" element={<ErpDocsLanding />} />
-            <Route path="/erp-docs/:slug" element={<ErpDocPage />} />
+            {/* Project documentation — driven by docs.json in each project folder */}
+            {projectDocsList.map((config) => (
+                <React.Fragment key={config.route}>
+                    <Route path={`/${config.route}`} element={<DocsLanding config={config} />} />
+                    <Route path={`/${config.route}/:slug`} element={<DocsPage config={config} />} />
+                </React.Fragment>
+            ))}
         </Route>
     </Routes>
 );

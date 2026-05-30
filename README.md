@@ -33,6 +33,27 @@ optional:
 - Add a logo to your website by placing any image to `/src/data/logo.<image-extension>` and running `npm run make-favicon`
 - Color match your skills by grouping them in `skills.json`
 - Change the Skill colors in `/src/utils/SkillColors.ts`
+- Add multi-page documentation for a project — it will appear as a top-level button in the sidebar / burger menu:
+  1. Create a folder `src/data/projects/<project-name>/docs/`
+  2. Add your documentation pages as `.md` or `.adoc` files inside that folder (one file per page)
+  3. Create `src/data/projects/<project-name>/docs.json` with the following fields:
+     ```json
+     {
+       "title": "My Documentation",
+       "route": "my-docs",
+       "landing_page": "src/data/projects/<project-name>/docs/landing.md",
+       "toc": [
+         { "slug": "introduction", "title": "Introduction", "level": 1 },
+         { "slug": "details",      "title": "Details",      "level": 2 }
+       ]
+     }
+     ```
+     - `title` — button label shown in the navigation bar
+     - `route` — URL prefix (e.g. `my-docs` → `/my-docs`, `/my-docs/introduction`)
+     - `landing_page` — path to the file rendered as the landing page description (above the table of contents)
+     - `toc` — ordered list of pages; `slug` must match the filename (without extension); `level` controls indentation (1 = top-level section, 2 = sub-section, 3 = sub-sub-section)
+  
+  All four fields are required. The button is hidden automatically if `docs.json` is absent or incomplete.
 
 Set it up
 ```

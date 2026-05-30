@@ -3,16 +3,17 @@ import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { findErpDocBySlug, getAdjacentErpDocs } from '../utils/erpDocs';
+import type { DocsConfig } from '../utils/docsLoader';
+import { findDocBySlug, getAdjacentDocs } from '../utils/docsLoader';
 import loadMarkdown from '../utils/markdownLoader';
 import { useMarkdownComponents } from '../utils/markdownComponents';
 import loadAndConvertAdoc from '../utils/asciidocLoader';
 import AsciidocRenderer from '../utils/asciidocRenderer';
 
-const ErpDocPage: React.FC = () => {
+const DocsPage: React.FC<{ config: DocsConfig }> = ({ config }) => {
     const { slug } = useParams<{ slug: string }>();
-    const entry = slug ? findErpDocBySlug(slug) : undefined;
-    const { prev, next } = slug ? getAdjacentErpDocs(slug) : { prev: null, next: null };
+    const entry = slug ? findDocBySlug(config.route, slug) : undefined;
+    const { prev, next } = slug ? getAdjacentDocs(config.route, slug) : { prev: null, next: null };
 
     const [md, setMd] = React.useState<string>('');
     const [adocHtml, setAdocHtml] = React.useState<string>('');
@@ -33,17 +34,11 @@ const ErpDocPage: React.FC = () => {
         setLoading(true);
         if (docIsAdoc) {
             loadAndConvertAdoc(entry.markdownUrl).then((html) => {
-                if (mounted) {
-                    setAdocHtml(html);
-                    setLoading(false);
-                }
+                if (mounted) { setAdocHtml(html); setLoading(false); }
             });
         } else {
             loadMarkdown(entry.markdownUrl).then((text) => {
-                if (mounted) {
-                    setMd(text);
-                    setLoading(false);
-                }
+                if (mounted) { setMd(text); setLoading(false); }
             });
         }
         return () => { mounted = false; };
@@ -55,7 +50,9 @@ const ErpDocPage: React.FC = () => {
         return (
             <div className="px-4 lg:px-8 pb-8 mt-6 max-w-4xl mx-auto">
                 <p className="text-red-600">Page not found.</p>
-                <Link to="/erp-docs" className="app-link hover:underline">Back to ERP Documentation</Link>
+                <Link to={`/${config.route}`} className="app-link hover:underline">
+                    Back to {config.title}
+                </Link>
             </div>
         );
     }
@@ -66,7 +63,7 @@ const ErpDocPage: React.FC = () => {
             <div className="mb-4 sticky top-12 lg:relative lg:top-0 z-40 flex items-center justify-between gap-3">
                 {prev ? (
                     <Link
-                        to={`/erp-docs/${prev.slug}`}
+                        to={`/${config.route}/${prev.slug}`}
                         className="btn-base btn-brand btn-solid btn-equal"
                         aria-label={`Previous: ${prev.title}`}
                     >
@@ -75,12 +72,12 @@ const ErpDocPage: React.FC = () => {
                 ) : (
                     <span className="btn-base btn-disabled btn-equal pointer-events-none select-none" aria-disabled="true">← previous</span>
                 )}
-                <Link to="/erp-docs" className="text-sm text-[var(--color-primary)] hover:underline">
+                <Link to={`/${config.route}`} className="text-sm text-[var(--color-primary)] hover:underline">
                     ↑ Table of Contents
                 </Link>
                 {next ? (
                     <Link
-                        to={`/erp-docs/${next.slug}`}
+                        to={`/${config.route}/${next.slug}`}
                         className="btn-base btn-brand btn-solid btn-equal"
                         aria-label={`Next: ${next.title}`}
                     >
@@ -124,4 +121,4 @@ const ErpDocPage: React.FC = () => {
     );
 };
 
-export default ErpDocPage;
+export default DocsPage;

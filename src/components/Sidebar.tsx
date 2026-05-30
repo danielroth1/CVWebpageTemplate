@@ -2,14 +2,14 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaHome, FaProjectDiagram, FaChevronDown, FaEnvelopeOpenText, FaBook } from 'react-icons/fa';
 import projectsData from '../data/projects.json';
-import { erpDocsToc } from '../utils/erpDocs';
+import { projectDocsList } from '../utils/docsLoader';
 import type { Project } from '../types';
 
 const Sidebar: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [open, setOpen] = React.useState<boolean>(false);
-    const [erpOpen, setErpOpen] = React.useState<boolean>(false);
+    const [openDocs, setOpenDocs] = React.useState<Set<string>>(new Set());
 
     // Auto-open if currently on a project route including root /projects
     React.useEffect(() => {
@@ -18,11 +18,17 @@ const Sidebar: React.FC = () => {
         }
     }, [location.pathname]);
 
-    // Auto-open ERP docs section when on an erp-docs route
+    // Auto-open the matching docs section when navigating to a docs route
     React.useEffect(() => {
-        if (/^\/erp-docs(\/|$)/.test(location.pathname)) {
-            setErpOpen(true);
-        }
+        projectDocsList.forEach((config) => {
+            if (location.pathname.startsWith(`/${config.route}`)) {
+                setOpenDocs((prev) => {
+                    const next = new Set(prev);
+                    next.add(config.route);
+                    return next;
+                });
+            }
+        });
     }, [location.pathname]);
 
     const handleProjectsNavigate = (e: React.MouseEvent) => {
@@ -36,7 +42,6 @@ const Sidebar: React.FC = () => {
     const base = 'transition-colors hover:bg-[var(--color-surface-solid)]/70 text-[var(--color-text)]';
 
     const isHome = location.pathname === '/';
-    const isErpDocs = location.pathname.startsWith('/erp-docs');
     const isProjects = location.pathname.startsWith('/projects');
     const isContact = location.pathname === '/contact';
 
@@ -49,43 +54,54 @@ const Sidebar: React.FC = () => {
                         <span className="inline-flex items-center gap-2"><FaHome /> Home</span>
                     </Link>
                 </li>
-                {/* ERP Documentation */}
-                <li>
-                    <div className={`flex items-stretch rounded ${isErpDocs ? active : ''}`}>
-                        <Link
-                            to="/erp-docs"
-                            className={`flex-1 px-3 py-2 rounded-l ${base} flex items-center gap-2 focus:outline-none`}
-                        >
-                            <FaBook /> <span>ERP Documentation</span>
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => setErpOpen((o) => !o)}
-                            aria-label={erpOpen ? 'Collapse ERP docs' : 'Expand ERP docs'}
-                            className={`px-2 py-2 rounded-r ${base} flex items-center`}
-                        >
-                            <FaChevronDown className={`transition-transform ${erpOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                    </div>
-                    {erpOpen && (
-                        <ul className="space-y-1 ml-4 mt-1">
-                            {erpDocsToc.map((entry) => {
-                                const isActivePage = location.pathname === `/erp-docs/${entry.slug}`;
-                                return (
-                                    <li key={entry.slug} style={{ paddingLeft: `${(entry.level - 1) * 0.75}rem` }}>
-                                        <Link
-                                            className={`flex items-baseline gap-1.5 px-3 py-1.5 rounded text-sm ${base} ${isActivePage ? active : ''}`}
-                                            to={`/erp-docs/${entry.slug}`}
-                                        >
-                                            <span className="font-mono text-xs opacity-60 shrink-0">{entry.number}</span>
-                                            <span className={entry.level === 1 ? 'font-medium' : ''}>{entry.title}</span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    )}
-                </li>
+                {/* Project documentation sections */}
+                {projectDocsList.map((config) => {
+                    const isDocActive = location.pathname.startsWith(`/${config.route}`);
+                    const isDocOpen = openDocs.has(config.route);
+                    return (
+                        <li key={config.route}>
+                            <div className={`flex items-stretch rounded ${isDocActive ? active : ''}`}>
+                                <Link
+                                    to={`/${config.route}`}
+                                    className={`flex-1 px-3 py-2 rounded-l ${base} flex items-center gap-2 focus:outline-none`}
+                                >
+                                    <FaBook /> <span>{config.title}</span>
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenDocs((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(config.route)) next.delete(config.route);
+                                        else next.add(config.route);
+                                        return next;
+                                    })}
+                                    aria-label={isDocOpen ? `Collapse ${config.title}` : `Expand ${config.title}`}
+                                    className={`px-2 py-2 rounded-r ${base} flex items-center`}
+                                >
+                                    <FaChevronDown className={`transition-transform ${isDocOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                            </div>
+                            {isDocOpen && (
+                                <ul className="space-y-1 ml-4 mt-1">
+                                    {config.entries.map((entry) => {
+                                        const isActivePage = location.pathname === `/${config.route}/${entry.slug}`;
+                                        return (
+                                            <li key={entry.slug} style={{ paddingLeft: `${(entry.level - 1) * 0.75}rem` }}>
+                                                <Link
+                                                    className={`flex items-baseline gap-1.5 px-3 py-1.5 rounded text-sm ${base} ${isActivePage ? active : ''}`}
+                                                    to={`/${config.route}/${entry.slug}`}
+                                                >
+                                                    <span className="font-mono text-xs opacity-60 shrink-0">{entry.number}</span>
+                                                    <span className={entry.level === 1 ? 'font-medium' : ''}>{entry.title}</span>
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </li>
+                    );
+                })}
                 <li>
                     <div className={`flex items-stretch rounded ${isProjects ? active : ''}`}>
                         {/* Navigation link */}
